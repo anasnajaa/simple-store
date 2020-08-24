@@ -33,3 +33,9 @@ exports.findAll = ()=>{
     .where({'leads.is_active': true})
     .select('id', 'email');
 };
+
+exports.findOne = (id)=>{
+    return knex('leads')
+    .where({'leads.id': id})
+    .select('id', 'email');
+};

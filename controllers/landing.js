@@ -1,8 +1,10 @@
-const leadModel = require('../models/leads.model')
+const leadModel = require('../models/leads.model');
+const mailer = require('../util/mailer');
+require('dotenv').config();
 
-const sendEmail = () => {
+const sendEmail = (email) => {
     mailer.sendMail({
-        from: '"NoReply" <noreply@domain.com>',
+        from: process.env.EMAIL_USER,
         to: email,
         subject: "subject",
         html: `message`
@@ -21,6 +23,7 @@ exports.submit_lead = (req, res, next) => {
     leadModel.add_email(email)
         .then(db=>{
             if(db.rowCount === 1) {
+                sendEmail(email);
                 res.redirect("/leads");
             } else {
                 res.redirect("/error");
@@ -44,12 +47,42 @@ exports.show_leads = (req, res, next)=>{
 };
 
 exports.show_lead = (req, res, next)=>{
-    leadModel.findAll()
+    const id = req.params.id;
+
+    leadModel.findOne(id)
         .then(rows=>{
-            res.render('landing', {leads: rows});
+            res.render('lead', {lead: rows[0]});
         })
         .catch(error=>{
             console.log(error);
             res.redirect("/error");
         });
+};
+
+exports.show_edit_lead = (req, res, next)=> {
+    const id = req.params.id;
+
+    leadModel.findOne(id)
+        .then(rows=>{
+            res.render('lead/edit_lead', {lead: rows[0]});
+        })
+        .catch(error=>{
+            console.log(error);
+            res.redirect("/error");
+        });
+};
+
+exports.edit_lead = (req, res, next)=> {
+    const id = req.params.id;
+    const email = req.body.lead_email;
+
+    leadModel.updateOne(id, email)
+    .then(rows=>{
+        console.log(rows);
+        res.redirect('/lead/'+id);
+    })
+    .catch(error=>{
+        console.log(error);
+        res.redirect("/error");
+    });
 };

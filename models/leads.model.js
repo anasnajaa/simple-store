@@ -39,3 +39,12 @@ exports.findOne = (id)=>{
     .where({'leads.id': id})
     .select('id', 'email');
 };
+
+exports.updateOne = (id, email)=>{
+    return knex('leads')
+    .where({'leads.id': id})
+    .update({
+        email,
+        date_updated: "now()"
+      });
+};

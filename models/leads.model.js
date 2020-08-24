@@ -48,3 +48,9 @@ exports.updateOne = (id, email)=>{
         date_updated: "now()"
       });
 };
+
+exports.deleteOne = (id)=>{
+    return knex('leads')
+    .where({'leads.id': id})
+    .del();
+};

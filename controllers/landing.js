@@ -11,13 +11,13 @@ const sendEmail = (email) => {
     }, "email sent").catch(console.error);
 };
 
-exports.get_landing = (req, res, next) => {
+exports.get_landing = (req, res) => {
     res.render('landing', {
         title: 'Express'
     });
 };
 
-exports.submit_lead = (req, res, next) => {
+exports.submit_lead = (req, res) => {
     const email = req.body.lead_email;
 
     leadModel.add_email(email)
@@ -35,7 +35,7 @@ exports.submit_lead = (req, res, next) => {
         });
 };
 
-exports.show_leads = (req, res, next)=>{
+exports.show_leads = (req, res)=>{
     leadModel.findAll()
         .then(rows=>{
             res.render('landing', {leads: rows});
@@ -46,7 +46,7 @@ exports.show_leads = (req, res, next)=>{
         });
 };
 
-exports.show_lead = (req, res, next)=>{
+exports.show_lead = (req, res)=>{
     const id = req.params.id;
 
     leadModel.findOne(id)
@@ -59,7 +59,7 @@ exports.show_lead = (req, res, next)=>{
         });
 };
 
-exports.show_edit_lead = (req, res, next)=> {
+exports.show_edit_lead = (req, res)=> {
     const id = req.params.id;
 
     leadModel.findOne(id)
@@ -72,17 +72,31 @@ exports.show_edit_lead = (req, res, next)=> {
         });
 };
 
-exports.edit_lead = (req, res, next)=> {
+exports.edit_lead = (req, res)=> {
     const id = req.params.id;
     const email = req.body.lead_email;
 
     leadModel.updateOne(id, email)
-    .then(rows=>{
-        console.log(rows);
-        res.redirect('/lead/'+id);
-    })
-    .catch(error=>{
-        console.log(error);
-        res.redirect("/error");
-    });
+        .then(rowsAffected=>{
+            console.log(rowsAffected);
+            res.redirect('/lead/'+id);
+        })
+        .catch(error=>{
+            console.log(error);
+            res.redirect("/error");
+        });
+};
+
+exports.delete_lead = (req, res) => {
+    const id = req.params.id;
+
+    leadModel.deleteOne(id)
+        .then(rowsAffected=>{
+            console.log(rowsAffected);
+            res.redirect('/leads');
+        })
+        .catch(error=>{
+            console.log(error);
+            res.redirect("/error");
+        });
 };

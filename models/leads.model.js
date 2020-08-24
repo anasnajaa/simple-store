@@ -31,13 +31,13 @@ exports.add_email = (email)=>{
 exports.findAll = ()=>{
     return knex('leads')
     .where({'leads.is_active': true})
-    .select('id', 'email');
+    .select('id', 'email', 'date_created');
 };
 
 exports.findOne = (id)=>{
     return knex('leads')
     .where({'leads.id': id})
-    .select('id', 'email');
+    .select('id', 'email', 'date_created');
 };
 
 exports.updateOne = (id, email)=>{

@@ -26,4 +26,10 @@ exports.add_email = (email)=>{
             .then(trx.commit)
             .catch(trx.rollback);
         });
-} 
+};
+
+exports.findAll = ()=>{
+    return knex('leads')
+    .where({'leads.is_active': true})
+    .select('id', 'email');
+};

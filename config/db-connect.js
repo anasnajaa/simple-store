@@ -8,6 +8,8 @@ module.exports = {
       database : process.env.DB,
       max: 10,
       idleTimeoutMillis: 30000,
-      ssl: true
+      ssl: {
+        rejectUnauthorized: false,
+      },
     }
 }

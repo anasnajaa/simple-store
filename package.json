@@ -1,9 +1,14 @@
 {
   "name": "simple-store",
-  "version": "0.0.0",
-  "private": true,
+  "version": "1.0.0",
+  "description": "Online shop",
+  "main": "server.js",
   "scripts": {
-    "start": "if [[ $NODE_ENV == 'production' ]]; then node ./bin/www; else nodemon ./bin/www; fi"
+    "start": "if [[ $NODE_ENV == 'production' ]]; then node server.js; else nodemon server.js; fi"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/hecked12/simple-store.git"
   },
   "dependencies": {
     "dotenv": "^7.0.0",
@@ -19,5 +24,11 @@
   },
   "devDependencies": {
     "nodemon": "^2.0.4"
-  }
+  },
+  "author": "A.N",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/hecked12/simple-store/issues"
+  },
+  "homepage": "https://github.com/hecked12/simple-store#readme"
 }

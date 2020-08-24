@@ -13,7 +13,8 @@ const sendEmail = (email) => {
 
 exports.get_landing = (req, res) => {
     res.render('landing', {
-        title: 'Express'
+        title: 'Express',
+        leads: []
     });
 };
 

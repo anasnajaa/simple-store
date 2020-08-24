@@ -13,11 +13,7 @@ const sendEmail = (email) => {
 };
 
 exports.get_landing = (req, res) => {
-    res.render('landing', {
-        title: 'Express',
-        leads: [],
-        util
-    });
+    res.render('landing', {});
 };
 
 exports.submit_lead = (req, res) => {
@@ -41,7 +37,7 @@ exports.submit_lead = (req, res) => {
 exports.show_leads = (req, res)=>{
     leadModel.findAll()
         .then(rows=>{
-            res.render('landing', {leads: rows, util},);
+            res.render('lead/leads_list', {leads: rows, util},);
         })
         .catch(error=>{
             console.log(error);

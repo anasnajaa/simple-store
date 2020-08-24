@@ -1,0 +1,46 @@
+<%- include('../common/header.ejs'); -%>
+<%- include('../common/navbar.ejs'); -%>
+<div class="container">
+    <div class="row mb-3">
+        <div class="col-6">
+            <form action="/" method="POST">
+                <div class="form-group">
+                    <label for="emailInput">Email address</label>
+                    <input name="lead_email" type="email" class="form-control" id="emailInput"
+                        aria-describedby="emailHelp">
+                </div>
+                <button type="submit" class="btn btn-primary">Submit</button>
+            </form>
+        </div>
+    </div>
+    <% if (leads.length > 0) {%>
+    <div class="row">
+        <div class="col-12">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th scope="col">ID</th>
+                        <th scope="col">Email</th>
+                        <th scope="col">Date created</th>
+                        <th scope="col">Details</th>
+                        <th scope="col">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% leads.forEach((lead)=> { %>
+                    <tr id="lead_<%=lead.id%>">
+                        <th scope="row"><%=lead.id%></th>
+                        <td><%=lead.email%></td>
+                        <td><%=util.formatDate(lead.date_created) %></td>
+                        <td><a href="/lead/<%=lead.id%>">Details</a></td>
+                        <td><button class="btn btn-sm btn-danger"
+                                onclick="api.lead.deleteOne('<%=lead.id%>');">Delete</button> </td>
+                    </tr>
+                    <%});%>
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <%}%>
+</div>
+<%- include('../common/footer.ejs'); -%>

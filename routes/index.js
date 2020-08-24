@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
-let index = require('../controllers/index');
+const landing = require('../controllers/landing');
 
-router.get('/', index.index);
+router.get('/', landing.get_landing);
 
 module.exports = router;

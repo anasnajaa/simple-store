@@ -1,5 +1,6 @@
 const leadModel = require('../models/leads.model');
 const mailer = require('../util/mailer');
+const util = require('../util/common');
 require('dotenv').config();
 
 const sendEmail = (email) => {
@@ -14,7 +15,8 @@ const sendEmail = (email) => {
 exports.get_landing = (req, res) => {
     res.render('landing', {
         title: 'Express',
-        leads: []
+        leads: [],
+        util
     });
 };
 
@@ -24,7 +26,7 @@ exports.submit_lead = (req, res) => {
     leadModel.add_email(email)
         .then(db=>{
             if(db.rowCount === 1) {
-                sendEmail(email);
+                //sendEmail(email);
                 res.redirect("/leads");
             } else {
                 res.redirect("/error");
@@ -39,7 +41,7 @@ exports.submit_lead = (req, res) => {
 exports.show_leads = (req, res)=>{
     leadModel.findAll()
         .then(rows=>{
-            res.render('landing', {leads: rows});
+            res.render('landing', {leads: rows, util},);
         })
         .catch(error=>{
             console.log(error);

@@ -1,4 +1,5 @@
 <%- include('./common/header.ejs'); -%>
+<%- include('./common/navbar.ejs'); -%>
 <div class="container">
   <div class="row">
     <div class="col-12">
@@ -16,7 +17,11 @@
     <div class="col-12">
       <ul>
         <% leads.forEach((lead)=> { %>
-          <li id="lead_<%=lead.id%>"><%=lead.email%> <a href="/lead/<%=lead.id%>">Details</a>&nbsp;|&nbsp; <button onclick="api.lead.deleteOne(<%=lead.id%>);">Delete</button> </li>
+          <li id="lead_<%=lead.id%>">
+            <%=lead.email%> | Date Created: <%=util.formatDate(lead.date_created) %>
+            <a href="/lead/<%=lead.id%>">Details</a>&nbsp;|
+            &nbsp; <button onclick="api.lead.deleteOne('<%=lead.id%>');">Delete</button> 
+          </li>
         <%});%>
       </ul>
     </div>

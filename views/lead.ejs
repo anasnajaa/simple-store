@@ -1,0 +1,18 @@
+<%- include('header'); -%>
+<div class="container">
+  <div class="row">
+    <div class="col-12">
+      <h1>Lead: <%=lead.email %></h1>
+      <h4>Actions</h4>
+      <ul>
+        <li><a class="btn btn-info" href="/lead/<%=lead.id%>/edit">Edit</a></li>
+        <li>
+          <form action="/lead/<%=lead.id%>/delete" method="POST">
+            <button type="submit" class="btn btn-danger" >Delete</button>
+          </form>
+        </li>
+      </ul>
+    </div>
+  </div>
+</div>
+<%- include('footer'); -%>

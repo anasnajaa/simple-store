@@ -1,0 +1,26 @@
+<%- include('header'); -%>
+<div class="container">
+  <div class="row">
+    <div class="col-12">
+      <form action="/" method="POST">
+        <div class="form-group">
+          <label for="emailInput">Email address</label>
+          <input name="lead_email" type="email" class="form-control" id="emailInput" aria-describedby="emailHelp">
+        </div>
+        <button type="submit" class="btn btn-primary">Submit</button>
+      </form>
+    </div>
+  </div>
+  <% if (leads.length > 0) {%>
+  <div class="row">
+    <div class="col-12">
+      <ul>
+        <% leads.forEach((lead)=> { %>
+          <li id="lead_<%=lead.id%>"><%=lead.email%> <a href="/lead/<%=lead.id%>">Details</a>&nbsp;|&nbsp; <button onclick="api.lead.deleteOne(<%=lead.id%>);">Delete</button> </li>
+        <%});%>
+      </ul>
+    </div>
+  </div>
+  <%}%>
+</div>
+<%- include('footer'); -%>

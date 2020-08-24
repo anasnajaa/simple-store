@@ -100,3 +100,20 @@ exports.delete_lead = (req, res) => {
             res.redirect("/error");
         });
 };
+
+exports.api_delete_lead = (req, res) => {
+    const id = req.params.id;
+  
+    leadModel.deleteOne(id)
+    .then(rowsAffected=>{
+        res.json({
+            deleted: rowsAffected
+        });
+    })
+    .catch(error=>{
+        console.log(error);
+        res.json({
+            error
+        });
+    });
+};

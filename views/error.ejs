@@ -1,2 +1,9 @@
-Error:
-<%=error.stack%>
+<%- include('./common/header.ejs'); -%>
+<div class="jumbotron">
+    <h1 class="display-4">Server Error</h1>
+    <hr class="my-4">
+    <p><%=error.stack%></p>
+    <a class="btn btn-primary btn-lg" href="/" role="button">back to main page</a>
+  </div>
+
+<%- include('./common/footer.ejs'); -%>

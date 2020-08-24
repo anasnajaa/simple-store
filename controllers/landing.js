@@ -1,4 +1,4 @@
-const leadModel = require('../models/leads')
+const leadModel = require('../models/leads.model')
 
 const sendEmail = () => {
     mailer.sendMail({
@@ -33,6 +33,17 @@ exports.submit_lead = (req, res, next) => {
 };
 
 exports.show_leads = (req, res, next)=>{
+    leadModel.findAll()
+        .then(rows=>{
+            res.render('landing', {leads: rows});
+        })
+        .catch(error=>{
+            console.log(error);
+            res.redirect("/error");
+        });
+};
+
+exports.show_lead = (req, res, next)=>{
     leadModel.findAll()
         .then(rows=>{
             res.render('landing', {leads: rows});

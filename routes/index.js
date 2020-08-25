@@ -18,6 +18,11 @@ router.post('/lead/:id/delete', landing.delete_lead);
 router.delete('/api/lead/:id', landing.api_delete_lead);
 
 router.get('/login', user.show_login);
+router.post('/login', user.login);
+
 router.get('/signup', user.show_signup);
+router.post('/signup', user.signup);
+
+
 
 module.exports = router;

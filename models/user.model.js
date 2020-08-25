@@ -2,7 +2,7 @@ const knex = require('knex')(require('../config/db-connect'));
 
 exports.add_new_user = (email)=>{
     const recordEmail = (trx) => {
-        return knex('leads')
+        return knex('users')
             .transacting(trx)
             .insert({
                 email,
@@ -28,20 +28,20 @@ exports.add_new_user = (email)=>{
         });
 };
 
-exports.findAll = ()=>{
-    return knex('leads')
-    .where({'leads.is_active': true})
-    .select('id', 'email', 'date_created');
+exports.findOneByEmail = (email)=>{
+    return knex('users')
+    .where({email})
+    .select('id', 'first_name', 'last_name', 'email', 'userame', 'isActive');
 };
 
 exports.findOne = (id)=>{
-    return knex('leads')
-    .where({'leads.id': id})
+    return knex('users')
+    .where({'users.id': id})
     .select('id', 'email', 'date_created');
 };
 
 exports.updateOne = (id, email)=>{
-    return knex('leads')
+    return knex('users')
     .where({'leads.id': id})
     .update({
         email,
@@ -50,7 +50,7 @@ exports.updateOne = (id, email)=>{
 };
 
 exports.deleteOne = (id)=>{
-    return knex('leads')
+    return knex('users')
     .where({'leads.id': id})
     .del();
 };

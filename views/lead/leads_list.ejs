@@ -1,9 +1,9 @@
-<%- include('../common/header.ejs'); -%>
+<%- include('../common/header.ejs', {title: "Leads List"}); -%>
 <%- include('../common/navbar.ejs'); -%>
 <div class="container">
     <div class="row mb-3">
         <div class="col-6">
-            <form action="/" method="POST">
+            <form action="/leads" method="POST">
                 <div class="form-group">
                     <label for="emailInput">Email address</label>
                     <input name="lead_email" type="email" class="form-control" id="emailInput"

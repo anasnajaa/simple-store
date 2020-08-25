@@ -5,3 +5,11 @@ exports.show_login = (req, res) => {
 exports.show_signup = (req, res) => {
     res.render('user/signup', {formData: {}, error: {}});
 };
+
+exports.login = (req, res) => {
+    res.render('user/signup', {formData: {}, error: {}});
+};
+
+exports.signup = (req, res) => {
+    res.render('user/signup', {formData: {}, error: {}});
+};

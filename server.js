@@ -6,6 +6,8 @@ const cookieParser = require('cookie-parser');
 const logger = require('morgan');
 const passport = require('passport');
 const session = require('express-session');
+const MongoStore = require('connect-mongo')(session);
+const flash = require('connect-flash');
 
 const indexRouter = require('./routes/index');
 const usersRouter = require('./routes/users');
@@ -23,9 +25,17 @@ app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
-app.use(session({secret: process.env.SESSION_SECRET}));
+app.use(session({
+  secret: process.env.SESSION_SECRET, 
+  resave: true, 
+  saveUninitialized: false,
+  store: new MongoStore({
+    url: process.env.ATLAS_URI_RW
+  })
+}));
+app.use(flash());
 app.use(passport.initialize());
-app.use(passport.session());
+app.use(passport.session({}));
 
 app.use('/', indexRouter);
 app.use('/users', usersRouter);

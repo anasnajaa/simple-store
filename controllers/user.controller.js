@@ -50,13 +50,15 @@ exports.signup = async (req, res, next) => {
         };
 
         const newUser = await userModel.createUser(userObject);
+        const newAdminRole = await userModel.addAdminRoleToUser(newUser.id);
+        
         if(newUser === null){
             req.flash('message', "Account creation failed");
             res.render('user/signup', {user: req.user});
             return;
         }
 
-        passport.authenticate("local", {
+        await passport.authenticate("local", {
             successRedirect: "/",
             failureRedirect: "/signup",
             failureFlash: true

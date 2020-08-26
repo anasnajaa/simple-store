@@ -2,10 +2,11 @@ const express = require('express');
 const router = express.Router();
 const landing = require('../controllers/landing.controller');
 const user = require('../controllers/user.controller');
+const {isLoggedIn, isAdmin} = require('../middleware/hasAuth');
 
 router.get('/', landing.get_landing);
 
-router.get('/leads', landing.show_leads);
+router.get('/leads', isAdmin, landing.show_leads);
 router.post('/leads', landing.submit_lead);
 
 router.get('/lead/:id', landing.show_lead);

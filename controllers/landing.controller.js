@@ -13,6 +13,7 @@ const sendEmail = (email) => {
 };
 
 exports.get_landing = (req, res) => {
+    //console.log(req.user);
     res.render('landing', {user: req.user});
 };
 

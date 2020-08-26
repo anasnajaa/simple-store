@@ -30,7 +30,6 @@ const validPassword = (user, password) => {
 const authFunction = async (req, email, password, done) => {
     try {
         const existingUser = await userModel.findOneByEmail(email);
-
         if (existingUser === null) {
             req.flash('message', 'Wrong username/password combination');
             return done(null, false);

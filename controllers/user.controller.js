@@ -2,17 +2,23 @@ const userModel = require('../models/user.model');
 const passport = require('passport');
 const myPassport = require('../util/passport_setup')(passport);
 const bcrypt = require('bcrypt');
+const { validateUser } = require('../validators');
+const { isEmpty } = require('lodash');
 
 const generateHash = (password) =>{
     return bcrypt.hashSync(password, bcrypt.genSaltSync(8), null);
 };
 
 exports.show_login = (req, res) => {
-    res.render('user/login', {formData: {}, error: {}, user: req.user});
+    res.render('user/login', {formData: {}, errors: {}, user: req.user});
 };
 
 exports.show_signup = (req, res) => {
-    res.render('user/signup', {formData: {}, error: {}, user: req.user});
+    res.render('user/signup', {formData: {}, errors: {}, user: req.user});
+};
+
+const rerender_signup = (errors, req, res, next)=> {
+    res.render('user/signup', {formData: req.body, errors, user: req.user});
 };
 
 exports.signup = async (req, res, next) => {
@@ -21,12 +27,19 @@ exports.signup = async (req, res, next) => {
     const password = generateHash(plainTextPassword);
 
     try {
-        const existingUser = await userModel.findOneByEmail(email);
-        if(existingUser !== null){
-            req.flash('message', "Account already exist");
-            res.render('user/signup', {user: req.user});
+        const errors = await validateUser({}, email, plainTextPassword);
+
+        if(!isEmpty(errors)){
+            rerender_signup(errors, req, res, next);
             return;
         }
+
+        // const existingUser = await userModel.findOneByEmail(email);
+        // if(existingUser !== null){
+        //     req.flash('message', "Account already exist");
+        //     res.render('user/signup', {user: req.user});
+        //     return;
+        // }
 
         const userObject = {
             email,

@@ -3,55 +3,61 @@ const localStrategy = require('passport-local').Strategy;
 const bcrypt = require('bcrypt');
 const passport = require('passport');
 
-const sUser = (user, done)=>{
+const sUser = (user, done) => {
     done(null, user.id);
 };
 
-const dSerUser = (id, done)=>{
-    userModel.findOne(id)
-    .then(rows=>{
-        if(rows && rows.length > 0){
-            done(null, rows[0]);
-        } else {
+const dSerUser = async (id, done) => {
+    try {
+        const user = await userModel.findOneById(id);
+        
+        if(user === null){
             done(new Error("Wrong user id."));
         }
-    })
-    .catch(error=>{
+
+        done(null, user);
+
+    } catch (error) {
         console.log(error);
         done(error);
-    });
+    }
 };
 
-const validPassword = (user, password)=>{
+const validPassword = (user, password) => {
     return bcrypt.compareSync(password, user.password);
 };
 
-const authFunction = (req, email, password, done)=>{
-    userModel.findOneByEmail(email)
-    .then(rows=>{
-        if(rows && rows.length > 0){
-            const user = rows[0];
-            if(!user.is_active){
-                req.flash('message', 'Please activate your account using the email sent to you');
-                return done(null, false);
-            } else if(user.password === undefined || user.password === null){
-                req.flash('message', 'Please reset your password using the email sent to you');
-                return done(null, false);
-            } else if(!validPassword(user, password)){
-                req.flash('message', 'Wrong username/password combination');
-                return done(null, false);
-            }
-            return done(null, user);
-        } else {
+const authFunction = async (req, email, password, done) => {
+    try {
+        const existingUser = await userModel.findOneByEmail(email);
+
+        if (existingUser === null) {
             req.flash('message', 'Wrong username/password combination');
             return done(null, false);
         }
-    })
-    .catch(error=>{
-        req.flash('message', 'Error:' + error);
+
+        if (!existingUser.is_active) {
+            req.flash('message', 'Please activate your account using the email sent to you');
+            return done(null, false);
+        }
+
+        if (existingUser.password === undefined || existingUser.password === null) {
+            req.flash('message', 'Please reset your password using the email sent to you');
+            return done(null, false);
+        }
+
+        if (!validPassword(existingUser, password)) {
+            req.flash('message', 'Wrong username/password combination');
+            return done(null, false);
+        }
+
+        return done(null, existingUser);
+
+    } catch (error) {
         console.log(error);
+        req.flash('message', 'Error:' + error);
         return done(error, false);
-    });
+    }
 };
 
 module.exports = (passport) => {

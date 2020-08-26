@@ -19,44 +19,43 @@ exports.login = (req, res) => {
     res.render('user/signup', {formData: {}, error: {}});
 };
 
-exports.signup = (req, res, next) => {
+exports.signup = async (req, res, next) => {
     const email = req.body.email;
     const plainTextPassword = req.body.password;
     const password = generateHash(plainTextPassword);
 
-    const createUser = ()=>{
+    try {
+        const existingUser = await userModel.findOneByEmail(email);
+        if(existingUser !== null){
+            req.flash('message', "Account already exist");
+            res.render('user/signup');
+            return;
+        }
+
         const userObject = {
             email,
             password,
             username: email,
             is_active: true,
-            date_created: "now()"
+            date_created: new Date()
         };
 
-        userModel.createUser(userObject)
-        .then(rows=>{
-            const id = rows[0];
-            passport.authenticate("local", {
-                successRedirect: "/",
-                failureRedirect: "/signup",
-                failureFlash: true
-            })(req, res, next);
-        })
-        .catch(error=>{
-            //res.render('user/signup', {formData: {}, error: {}});
-        });
-    }
-
-    userModel.findOneByEmail(email)
-    .then(rows=>{
-        if(rows.length === 0){
-            createUser();
-        } else {
-            req.flash('message', "Account already exist");
+        const newUser = await userModel.createUser(userObject);
+        if(newUser === null){
+            req.flash('message', "Account creation failed");
             res.render('user/signup');
+            return;
         }
-    })
-    .catch(error=>{
+
+        passport.authenticate("local", {
+            successRedirect: "/",
+            failureRedirect: "/signup",
+            failureFlash: true
+        })(req, res, next);
+
+    } catch (error) {
         console.log(error);
-    });
+        req.flash('message', "Error: "+ error);
+        res.render('user/signup');
+    }
 };

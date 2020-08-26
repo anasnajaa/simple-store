@@ -28,21 +28,46 @@ exports.add_new_user = (email)=>{
         });
 };
 
-exports.findOneByEmail = (email)=>{
-    return knex('users')
-    .where({email})
-    .select('*');
+exports.findOneByEmail = async (email)=>{
+    try {
+        const rows = await knex('users').where({email}).select('*');
+        if(rows && rows.length > 0){
+            return rows[0];
+        } else {
+            return null;
+        }
+    } catch (error) {
+        console.log(error);
+        return null;
+    }
 };
 
-exports.findOne = (id)=>{
-    return knex('users')
-    .where({'users.id': id})
-    .select('*');
+exports.findOneById = async (id)=>{
+    try {
+        const rows = await knex('users').where({'users.id': id}).select('*');
+        if(rows && rows.length > 0){
+            return rows[0];
+        } else {
+            return null;
+        }
+    } catch (error) {
+        console.log(error);
+        return null;
+    }
 };
 
-exports.createUser = (userObject)=>{
-    return knex('users')
-    .insert(userObject);
+exports.createUser = async (userObject)=>{
+    try {
+        const rows = await knex('users').insert(userObject).returning('*');
+        if(rows && rows.length > 0){
+            return rows[0];
+        } else {
+            return null;
+        }
+    } catch (error) {
+        console.log(error);
+        return null;
+    }
 };
 
 exports.deleteOne = (id)=>{

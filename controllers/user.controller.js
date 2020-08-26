@@ -1,5 +1,6 @@
 const userModel = require('../models/user.model');
 const passport = require('passport');
+const util = require('../util/common');
 const myPassport = require('../util/passport_setup')(passport);
 const bcrypt = require('bcrypt');
 const { validateUser } = require('../validators');
@@ -10,15 +11,15 @@ const generateHash = (password) =>{
 };
 
 exports.show_login = (req, res) => {
-    res.render('user/login', {formData: {}, errors: {}, user: req.user});
+    res.render('user/login', {formData: {}, errors: {}, user: req.user, util});
 };
 
 exports.show_signup = (req, res) => {
-    res.render('user/signup', {formData: {}, errors: {}, user: req.user});
+    res.render('user/signup', {formData: {}, errors: {}, user: req.user, util});
 };
 
 const rerender_signup = (errors, req, res, next)=> {
-    res.render('user/signup', {formData: req.body, errors, user: req.user});
+    res.render('user/signup', {formData: req.body, errors, user: req.user, util});
 };
 
 exports.signup = async (req, res, next) => {
@@ -51,10 +52,10 @@ exports.signup = async (req, res, next) => {
 
         const newUser = await userModel.createUser(userObject);
         const newAdminRole = await userModel.addAdminRoleToUser(newUser.id);
-        
+
         if(newUser === null){
             req.flash('message', "Account creation failed");
-            res.render('user/signup', {user: req.user});
+            res.render('user/signup', {user: req.user, util});
             return;
         }
 
@@ -67,7 +68,7 @@ exports.signup = async (req, res, next) => {
     } catch (error) {
         console.log(error);
         req.flash('message', "Error: "+ error);
-        res.render('user/signup', {user: req.user});
+        res.render('user/signup', {user: req.user, util});
     }
 };
 

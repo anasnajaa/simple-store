@@ -10,9 +10,11 @@
       <li class="nav-item active">
         <a class="nav-link" href="/">Home <span class="sr-only">(current)</span></a>
       </li>
+      <% if(user && util.hasRole(user.roles, "admin")){%>
       <li class="nav-item">
         <a class="nav-link" href="/leads">Leads</a>
       </li>
+      <%}%>
     </ul>
     <div class="my-2 my-lg-0">
       <% if(user) { %>

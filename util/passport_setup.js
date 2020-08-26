@@ -23,7 +23,7 @@ const dSerUser = (id, done)=>{
 };
 
 const validPassword = (user, password)=>{
-    return bcrypt.compareSync(user.password, password);
+    return bcrypt.compareSync(password, user.password);
 };
 
 const authFunction = (req, email, password, done)=>{
@@ -31,15 +31,13 @@ const authFunction = (req, email, password, done)=>{
     .then(rows=>{
         if(rows && rows.length > 0){
             const user = rows[0];
-            if(!user.isActive){
+            if(!user.is_active){
                 req.flash('message', 'Please activate your account using the email sent to you');
                 return done(null, false);
-            }
-            if(user.password === undefined || user.password === null){
+            } else if(user.password === undefined || user.password === null){
                 req.flash('message', 'Please reset your password using the email sent to you');
                 return done(null, false);
-            }
-            if(!validPassword(user, password)){
+            } else if(!validPassword(user, password)){
                 req.flash('message', 'Wrong username/password combination');
                 return done(null, false);
             }
@@ -57,7 +55,7 @@ const authFunction = (req, email, password, done)=>{
 };
 
 module.exports = (passport) => {
-    
+
     passport.serializeUser(sUser);
 
     passport.deserializeUser(dSerUser);

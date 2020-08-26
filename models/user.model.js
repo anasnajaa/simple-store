@@ -31,22 +31,18 @@ exports.add_new_user = (email)=>{
 exports.findOneByEmail = (email)=>{
     return knex('users')
     .where({email})
-    .select('id', 'first_name', 'last_name', 'email', 'userame', 'isActive');
+    .select('*');
 };
 
 exports.findOne = (id)=>{
     return knex('users')
     .where({'users.id': id})
-    .select('id', 'email', 'date_created');
+    .select('*');
 };
 
-exports.updateOne = (id, email)=>{
+exports.createUser = (userObject)=>{
     return knex('users')
-    .where({'leads.id': id})
-    .update({
-        email,
-        date_updated: "now()"
-      });
+    .insert(userObject);
 };
 
 exports.deleteOne = (id)=>{

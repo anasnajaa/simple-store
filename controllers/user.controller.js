@@ -8,15 +8,11 @@ const generateHash = (password) =>{
 };
 
 exports.show_login = (req, res) => {
-    res.render('user/login', {formData: {}, error: {}});
+    res.render('user/login', {formData: {}, error: {}, user: req.user});
 };
 
 exports.show_signup = (req, res) => {
-    res.render('user/signup', {formData: {}, error: {}});
-};
-
-exports.login = (req, res) => {
-    res.render('user/signup', {formData: {}, error: {}});
+    res.render('user/signup', {formData: {}, error: {}, user: req.user});
 };
 
 exports.signup = async (req, res, next) => {
@@ -28,7 +24,7 @@ exports.signup = async (req, res, next) => {
         const existingUser = await userModel.findOneByEmail(email);
         if(existingUser !== null){
             req.flash('message', "Account already exist");
-            res.render('user/signup');
+            res.render('user/signup', {user: req.user});
             return;
         }
 
@@ -43,7 +39,7 @@ exports.signup = async (req, res, next) => {
         const newUser = await userModel.createUser(userObject);
         if(newUser === null){
             req.flash('message', "Account creation failed");
-            res.render('user/signup');
+            res.render('user/signup', {user: req.user});
             return;
         }
 
@@ -56,6 +52,20 @@ exports.signup = async (req, res, next) => {
     } catch (error) {
         console.log(error);
         req.flash('message', "Error: "+ error);
-        res.render('user/signup');
+        res.render('user/signup', {user: req.user});
     }
+};
+
+exports.login = (req, res, next) => {
+    passport.authenticate("local", {
+        successRedirect: "/",
+        failureRedirect: "/login",
+        failureFlash: true
+    })(req, res, next);
+};
+
+exports.logout = (req, res, next) => {
+    req.logout();
+    req.session.destroy();
+    res.redirect('/');
 };

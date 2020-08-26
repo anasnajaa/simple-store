@@ -1,8 +1,15 @@
 <%- include('./common/header.ejs', {title: "Server Error"}); -%>
-<div class="jumbotron">
-    <h1 class="display-4">Server Error</h1>
-    <hr class="my-4">
-    <p><%=error.stack%></p>
-    <a class="btn btn-primary btn-lg" href="/" role="button">back to main page</a>
+<div class="container mt-4">
+  <div class="row">
+    <div class="col-12">
+      <div class="jumbotron">
+        <h1 class="display-4"><%=error.status%> Error</h1>
+        <p><%=error.message%></p>
+        <hr class="my-4">
+        <p><%=error.stack%></p>
+        <a class="btn btn-primary btn-lg" href="/" role="button">back to main page</a>
+      </div>
+    </div>
   </div>
+</div>
 <%- include('./common/footer.ejs'); -%>

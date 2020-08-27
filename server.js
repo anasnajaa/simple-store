@@ -7,6 +7,7 @@ const logger = require('morgan');
 const passport = require('passport');
 const session = require('express-session');
 const MongoStore = require('connect-mongo')(session);
+const util = require('./util/common');
 const flash = require('connect-flash');
 
 const indexRouter = require('./routes/index');
@@ -34,8 +35,17 @@ app.use(session({
   })
 }));
 app.use(flash());
+
 app.use(passport.initialize());
 app.use(passport.session({}));
+
+app.use((req, res, next)=>{
+  res.locals.success = req.flash('success');
+  res.locals.error = req.flash('error');
+  res.locals.info = req.flash('info');
+  res.locals.util = util;
+  next();
+});
 
 app.use('/', indexRouter);
 app.use('/users', usersRouter);

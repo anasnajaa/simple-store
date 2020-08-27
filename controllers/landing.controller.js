@@ -14,7 +14,7 @@ const sendEmail = (email) => {
 
 exports.get_landing = (req, res) => {
     //console.log(req.user);
-    res.render('landing', {user: req.user, util});
+    res.render('landing', {user: req.user});
 };
 
 exports.submit_lead = (req, res) => {
@@ -38,7 +38,7 @@ exports.submit_lead = (req, res) => {
 exports.show_leads = (req, res)=>{
     leadModel.findAll()
         .then(rows=>{
-            res.render('lead/leads_list', {leads: rows, util, user: req.user},);
+            res.render('lead/leads_list', {leads: rows, user: req.user},);
         })
         .catch(error=>{
             console.log(error);
@@ -51,7 +51,7 @@ exports.show_lead = (req, res)=>{
 
     leadModel.findOne(id)
         .then(rows=>{
-            res.render('lead', {lead: rows[0], user: req.user, util});
+            res.render('lead', {lead: rows[0], user: req.user});
         })
         .catch(error=>{
             console.log(error);
@@ -64,7 +64,7 @@ exports.show_edit_lead = (req, res)=> {
 
     leadModel.findOne(id)
         .then(rows=>{
-            res.render('lead/edit_lead', {lead: rows[0], user: req.user, util});
+            res.render('lead/edit_lead', {lead: rows[0], user: req.user});
         })
         .catch(error=>{
             console.log(error);

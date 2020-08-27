@@ -23,7 +23,14 @@ const vUserExist = async (errors, email) => {
     }
 };
 
-const validateUser = async (errors, email, password) => {
+const vUserDoesNotExist = async (errors, email) => {
+    const existingUser = await userModel.findOneByEmail(email);
+    if(existingUser === null){
+        errors["email"] = "Account does not exist";
+    }
+};
+
+const validateUserSignup = async (errors, email, password) => {
     vEmail(errors, email);
     vPassword(errors, password);
     if(!errors || !errors["email"]){
@@ -32,8 +39,15 @@ const validateUser = async (errors, email, password) => {
     return errors;
 }
 
+const validateUserSignin = async (errors, email, password) => {
+    vEmail(errors, email);
+    vPassword(errors, password);
+    return errors;
+}
+
 module.exports = {
-    validateUser,
+    validateUserSignup,
+    validateUserSignin,
     vUserExist,
     vPassword,
     vEmail

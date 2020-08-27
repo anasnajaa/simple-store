@@ -124,6 +124,6 @@ exports.addCustomerRoleToUser = async (userId)=>{
 
 exports.deleteOne = (id)=>{
     return knex('users')
-    .where({'leads.id': id})
+    .where({'users.id': id})
     .del();
 };

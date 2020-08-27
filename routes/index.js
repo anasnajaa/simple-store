@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const landing = require('../controllers/landing.controller');
 const user = require('../controllers/user.controller');
-const {isLoggedIn, isAdmin} = require('../middleware/hasAuth');
+const {isLoggedIn, isAdmin, isLoggedOut} = require('../middleware/hasAuth');
 
 router.get('/', landing.get_landing);
 
@@ -18,13 +18,13 @@ router.post('/lead/:id/delete', isAdmin, landing.delete_lead);
 
 router.delete('/api/lead/:id', isAdmin, landing.api_delete_lead);
 
-router.get('/login', user.show_login);
-router.post('/login', user.login);
+router.get('/login', isLoggedOut, user.show_login);
+router.post('/login', isLoggedOut, user.login);
 
-router.get('/signup', user.show_signup);
-router.post('/signup', user.signup);
+router.get('/signup', isLoggedOut, user.show_signup);
+router.post('/signup', isLoggedOut, user.signup);
 
-router.get('/logout', user.logout);
-router.post('/logout', user.logout);
+router.get('/logout', isLoggedIn, user.logout);
+router.post('/logout', isLoggedIn, user.logout);
 
 module.exports = router;

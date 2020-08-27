@@ -13,7 +13,15 @@ exports.isLoggedIn = (req, res, next) => {
     if(req.user){
         next();
     } else {
-        next(createError(404, "Page does not exist"));
+        next(createError(401, "You must be logged in to view this page"));
+    }
+}
+
+exports.isLoggedOut = (req, res, next) => {
+    if(req.user === undefined || req.user === null){
+        next();
+    } else {
+        next(createError(401, "You cannot access this page right now"));
     }
 }
 

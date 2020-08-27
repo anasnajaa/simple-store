@@ -31,22 +31,22 @@ const authFunction = async (req, email, password, done) => {
     try {
         const existingUser = await userModel.findOneByEmail(email);
         if (existingUser === null) {
-            req.flash('message', 'Wrong username/password combination');
+            req.flash('error', 'Wrong username/password combination');
             return done(null, false);
         }
 
         if (!existingUser.is_active) {
-            req.flash('message', 'Please activate your account using the email sent to you');
+            req.flash('error', 'Please activate your account using the email sent to you');
             return done(null, false);
         }
 
         if (existingUser.password === undefined || existingUser.password === null) {
-            req.flash('message', 'Please reset your password using the email sent to you');
+            req.flash('error', 'Please reset your password using the email sent to you');
             return done(null, false);
         }
 
         if (!validPassword(existingUser, password)) {
-            req.flash('message', 'Wrong username/password combination');
+            req.flash('error', 'Wrong username/password combination');
             return done(null, false);
         }
 
@@ -54,7 +54,7 @@ const authFunction = async (req, email, password, done) => {
 
     } catch (error) {
         console.log(error);
-        req.flash('message', 'Error:' + error);
+        req.flash('error', 'Error:' + error);
         return done(error, false);
     }
 };

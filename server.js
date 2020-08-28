@@ -7,11 +7,12 @@ const logger = require('morgan');
 const passport = require('passport');
 const session = require('express-session');
 const MongoStore = require('connect-mongo')(session);
-const util = require('./util/common');
+
 const flash = require('connect-flash');
 
 const indexRouter = require('./routes/index');
-const usersRouter = require('./routes/users');
+const adminRouter = require('./routes/admin');
+const apiRouter = require('./routes/api');
 
 require('./util/passport_setup')(passport);
 
@@ -22,33 +23,30 @@ app.set('view engine', 'ejs');
 
 app.use(logger('dev'));
 app.use(express.json());
-app.use(express.urlencoded({ extended: false }));
+app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
 app.use(session({
   secret: process.env.SESSION_SECRET, 
-  resave: true, 
+  resave: false, 
   saveUninitialized: false,
   store: new MongoStore({
     url: process.env.ATLAS_URI_RW
-  })
+  }),
+  cookie: {
+    maxAge: 1 * 60 * 60 * 1000 //1 hour
+  }
 }));
+
 app.use(flash());
 
 app.use(passport.initialize());
 app.use(passport.session({}));
 
-app.use((req, res, next)=>{
-  res.locals.success = req.flash('success');
-  res.locals.error = req.flash('error');
-  res.locals.info = req.flash('info');
-  res.locals.util = util;
-  next();
-});
-
 app.use('/', indexRouter);
-app.use('/users', usersRouter);
+app.use('/admin', adminRouter);
+app.use('/api', apiRouter);
 
 app.use((req, res, next) => {
   next(createError(404));

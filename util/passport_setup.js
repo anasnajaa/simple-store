@@ -58,11 +58,8 @@ const authFunction = (req, email, password, cb) => {
 };
 
 module.exports = (passport) => {
-
     passport.serializeUser(sUser);
-
     passport.deserializeUser(dSerUser);
-
     passport.use(new localStrategy({
         usernameField: "email",
         passwordField: "password",

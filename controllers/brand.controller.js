@@ -1,23 +1,7 @@
+const { render } = require('../util/express');
 const leadModel = require('../models/leads.model');
-const mailer = require('../util/mailer');
-const util = require('../util/common');
-require('dotenv').config();
 
-const sendEmail = (email) => {
-    mailer.sendMail({
-        from: process.env.EMAIL_USER,
-        to: email,
-        subject: "subject",
-        html: `message`
-    }, "email sent").catch(console.error);
-};
-
-exports.get_landing = (req, res) => {
-    //console.log(req.user);
-    res.render('landing', {user: req.user});
-};
-
-exports.submit_lead = (req, res) => {
+exports.submit_brand = (req, res, next) => {
     const email = req.body.lead_email;
 
     leadModel.add_email(email)
@@ -35,10 +19,11 @@ exports.submit_lead = (req, res) => {
         });
 };
 
-exports.show_leads = (req, res)=>{
+exports.show_brands = (req, res, next)=>{
     leadModel.findAll()
         .then(rows=>{
-            res.render('lead/leads_list', {leads: rows, user: req.user},);
+            const data = {leads: rows};
+            render(req, res, next, 'lead/leads_list', data);
         })
         .catch(error=>{
             console.log(error);
@@ -46,12 +31,13 @@ exports.show_leads = (req, res)=>{
         });
 };
 
-exports.show_lead = (req, res)=>{
+exports.show_brand = (req, res, next)=>{
     const id = req.params.id;
 
     leadModel.findOne(id)
         .then(rows=>{
-            res.render('lead', {lead: rows[0], user: req.user});
+            const data = {lead: rows[0]};
+            render(req, res, next, 'lead', data);
         })
         .catch(error=>{
             console.log(error);
@@ -59,12 +45,13 @@ exports.show_lead = (req, res)=>{
         });
 };
 
-exports.show_edit_lead = (req, res)=> {
+exports.show_edit_brand = (req, res, next)=> {
     const id = req.params.id;
 
     leadModel.findOne(id)
         .then(rows=>{
-            res.render('lead/edit_lead', {lead: rows[0], user: req.user});
+            const data = {lead: rows[0]};
+            render(req, res, next, 'lead/edit_lead', data);
         })
         .catch(error=>{
             console.log(error);
@@ -72,7 +59,7 @@ exports.show_edit_lead = (req, res)=> {
         });
 };
 
-exports.edit_lead = (req, res)=> {
+exports.edit_brand = (req, res, next)=> {
     const id = req.params.id;
     const email = req.body.lead_email;
 
@@ -87,7 +74,7 @@ exports.edit_lead = (req, res)=> {
         });
 };
 
-exports.delete_lead = (req, res) => {
+exports.delete_brand = (req, res, next) => {
     const id = req.params.id;
 
     leadModel.deleteOne(id)
@@ -101,7 +88,7 @@ exports.delete_lead = (req, res) => {
         });
 };
 
-exports.api_delete_lead = (req, res) => {
+exports.api_delete_brand = (req, res, next) => {
     const id = req.params.id;
   
     leadModel.deleteOne(id)

@@ -1,30 +1,47 @@
 const knex = require('knex')(require('../config/db-connect'));
 
-exports.add_new_user = (email)=>{
-    const recordEmail = (trx) => {
+exports.addNewCustomer = (userObject, cb)=>{
+    let dbUser = {};
+
+    const createUser = (trx) => {
         return knex('users')
-            .transacting(trx)
-            .insert({
-                email,
-                date_created: 'now()'
-            });
+        .transacting(trx)
+        .insert(userObject)
+        .returning('*');
     };
 
-    const logEntry = (trx) => {
+    const addCustomerRole = (trx, user) => {
+        return knex('users_roles')
+        .transacting(trx)
+        .insert({'user_id': user.id, 'role_id': 2})
+        .returning('*');
+    };
+
+    const logEntry = (trx, user) => {
         return knex('logs')
             .transacting(trx)
             .insert({
-                entry: "Email registered to database: " + email,
+                entry: "New customer created: " + user.id,
             });
     };
 
-    return knex.transaction((trx) => {
-        recordEmail(trx)
-            .then((resp) => {
-                return logEntry(trx);
+    knex.transaction((trx) => {
+        createUser(trx)
+            .then((rows) => {
+                dbUser = rows[0];
+                return addCustomerRole(trx, dbUser);
+            })
+            .then(()=> {
+                return logEntry(trx, dbUser);
             })
             .then(trx.commit)
             .catch(trx.rollback);
+        })
+        .then((inserts) => {
+            cb(null, dbUser);
+        })
+        .catch(function (error) {
+            cb(error, null);
         });
 };
 

@@ -8,7 +8,8 @@ const passport = require('passport');
 const session = require('express-session');
 const MongoStore = require('connect-mongo')(session);
 
-const flash = require('connect-flash');
+const connectFlash = require('connect-flash');
+const { flash } = require('./util/express');
 
 const indexRouter = require('./routes/index');
 const adminRouter = require('./routes/admin');
@@ -35,14 +36,22 @@ app.use(session({
     url: process.env.ATLAS_URI_RW
   }),
   cookie: {
-    maxAge: 1 * 60 * 60 * 1000 //1 hour
+    maxAge: 1 * 1 * 60 * 1000 //1 hour
   }
 }));
 
-app.use(flash());
+app.use(connectFlash());
 
 app.use(passport.initialize());
 app.use(passport.session({}));
+
+app.use((req, res, next) => {
+  // const session = JSON.parse(req.cookies['session'] || '');
+  // if (session && new Date(session.expires) < new Date()) {
+  //     flash(req, "info", null, "your session expired, please login again");
+  // }
+   next();
+});
 
 app.use('/', indexRouter);
 app.use('/admin', adminRouter);

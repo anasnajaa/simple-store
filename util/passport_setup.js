@@ -1,25 +1,23 @@
 const userModel = require('../models/user.model');
 const localStrategy = require('passport-local').Strategy;
 const bcrypt = require('bcrypt');
-const passport = require('passport');
+const { flash } = require('../util/express');
 
-const sUser = (user, done) => {
-    done(null, user.id);
+const sUser = (user, cb) => {
+    cb(null, user.id);
 };
 
-const dSerUser = async (id, done) => {
+const dSerUser = (id, cb) => {
     try {
-        const user = await userModel.findOneById(id);
-        
-        if(user === null){
-            done(new Error("Wrong user id."));
-        }
-
-        done(null, user);
-
+        userModel.findOneById(id).then(user=> {
+            if(user === null){
+                cb(new Error("Wrong user id."), null);
+            }
+    
+            cb(null, user);
+        });
     } catch (error) {
-        console.log(error);
-        done(error);
+        cb(error, null);
     }
 };
 
@@ -27,35 +25,35 @@ const validPassword = (user, password) => {
     return bcrypt.compareSync(password, user.password);
 };
 
-const authFunction = async (req, email, password, done) => {
+const authFunction = (req, email, password, cb) => {
     try {
-        const existingUser = await userModel.findOneByEmail(email);
-        if (existingUser === null) {
-            req.flash('error', 'Wrong username/password combination');
-            return done(null, false);
-        }
+        userModel.findOneByEmail(email).then(existingUser => {
 
-        if (!existingUser.is_active) {
-            req.flash('error', 'Please activate your account using the email sent to you');
-            return done(null, false);
-        }
+            if (existingUser === null) {
+                flash(req, "danger", null, "Wrong username/password combination");
+                return cb(true, null);
+            }
+    
+            if (!existingUser.is_active) {
+                flash(req, "danger", null, "Please activate your account using the email sent to you");
+                return cb(true, null);
+            }
+    
+            if (existingUser.password === undefined || existingUser.password === null) {
+                flash(req, "danger", null, "Please reset your password using the email sent to you");
+                return cb(true, null);
+            }
+    
+            if (!validPassword(existingUser, password)) {
+                flash(req, "danger", null, "Wrong username/password combination");
+                return cb(true, null);
+            }
 
-        if (existingUser.password === undefined || existingUser.password === null) {
-            req.flash('error', 'Please reset your password using the email sent to you');
-            return done(null, false);
-        }
-
-        if (!validPassword(existingUser, password)) {
-            req.flash('error', 'Wrong username/password combination');
-            return done(null, false);
-        }
-
-        return done(null, existingUser);
-
+            return cb(null, existingUser);
+        });
     } catch (error) {
-        console.log(error);
-        req.flash('error', 'Error:' + error);
-        return done(error, false);
+        flash(req, "danger", null, error);
+        return cb(error, null);
     }
 };
 

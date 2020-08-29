@@ -11,9 +11,9 @@ const MongoStore = require('connect-mongo')(session);
 const connectFlash = require('connect-flash');
 const { flash } = require('./util/express');
 
-const indexRouter = require('./routes/index');
-const adminRouter = require('./routes/admin');
-const apiRouter = require('./routes/api');
+const indexRouter = require('./routes/index.router');
+const adminRouter = require('./routes/admin.router');
+const apiRouter = require('./routes/api.router');
 
 require('./util/passport_setup')(passport);
 

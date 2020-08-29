@@ -9,28 +9,31 @@ const { render, flash } = require('../util/express');
 const mailer = require('../util/mailer');
 const { v4 } = require('uuid');
 
+const viewLogin = "user.login.ejs";
+const viewSignup = "user.signup.ejs";
+
 const generateHash = (password) =>{
     return bcrypt.hashSync(password, bcrypt.genSaltSync(8), null);
 };
 
 exports.show_login = (req, res, next) => {
     const data = {formData: {}, errors: {}};
-    render(req, res, next, 'user/login', data);
+    render(req, res, next, viewLogin, data);
 };
 
 exports.show_signup = (req, res, next) => {
     const data = {formData: {}, errors: {}};
-    render(req, res, next, 'user/signup', data);
+    render(req, res, next, viewSignup, data);
 };
 
 const rerender_signup = (errors, req, res, next)=> {
     const data = {formData: req.body, errors};
-    render(req, res, next, 'user/signup', data);
+    render(req, res, next, viewSignup, data);
 };
 
 const rerender_login = (errors, req, res, next)=> {
     const data = {formData: req.body, errors};
-    render(req, res, next, 'user/login', data);
+    render(req, res, next, viewLogin, data);
 };
 
 const sendActivationEmail = (user) => {
@@ -76,19 +79,19 @@ exports.signup = async (req, res, next) => {
         userModel.addNewCustomer(userObject, (error, createdUser)=>{
             if(error){
                 flash(req, "danger", null, "Account creation failed");
-                render(req, res, next, 'user/signup', {formData: req.body, errors});
+                render(req, res, next, viewSignup, {formData: req.body, errors});
                 return;
             } else {
                 sendActivationEmail(createdUser);
                 sendWelcomeEmail(createdUser);
                 flash(req, "success", "Account created!", "Please check your email for instructions on how to activate your account");
-                render(req, res, next, 'user/login', {formData: {}, errors: {}});
+                render(req, res, next, viewLogin, {formData: {}, errors: {}});
             }
         });
 
     } catch (error) {
         flash(req, "danger", null, error);
-        render(req, res, next, 'user/signup', {});
+        render(req, res, next, viewSignup, {});
     }
 };
 
@@ -122,7 +125,7 @@ exports.login = (req, res, next) => {
 
     } catch(error) {
         flash(req, "danger", null, error);
-        render(req, res, next, 'user/login', {});
+        render(req, res, next, viewLogin, {});
     }
 };
 

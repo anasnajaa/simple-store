@@ -1,0 +1,17 @@
+<%- include('./common.header.ejs', {title: "Admin Panel"}); -%>
+<%- include('./common.navbar.ejs', {user, util}); -%>
+<div class="container">
+    <%- include('./common.breadcrumbs.ejs', {crumbs: [
+        {title: "home", url:"/"}, 
+        {title: "admin", url:"/admin", active: true}
+    ]}); -%>
+    <div class="row">
+        <div class="col-12">
+            <h1>Available Actions:</h1>
+            <ul>
+                <li><a href="/admin/brands">Brands</a></li>
+            </ul>
+        </div>
+    </div>
+</div>
+<%- include('./common.footer.ejs'); -%>

@@ -1,5 +1,5 @@
-<%- include('./common/header.ejs', {title: "Simple Store"}); -%>
-<%- include('./common/navbar.ejs', {user, util}); -%>
+<%- include('./common.header.ejs', {title: "Simple Store"}); -%>
+<%- include('./common.navbar.ejs', {user, util}); -%>
 <div class="container">
   <div class="jumbotron">
     <h1 class="display-4">Welcome to simple store!</h1>
@@ -11,9 +11,9 @@
   <div class="row">
     <% for(let i =0; i< 100; i++){ %>
       <div class="col-12 col-sm-12 col-md-3 col-lg-3 col-xol-3">
-        <%- include('./store/item.ejs'); -%>
+        <%- include('./store.item.ejs'); -%>
       </div>
       <%}%>
   </div>
 </div>
-<%- include('./common/footer.ejs'); -%>
+<%- include('./common.footer.ejs'); -%>

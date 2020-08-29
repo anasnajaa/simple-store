@@ -1,0 +1,47 @@
+<%- include('./common.header.ejs', {title: "Brands"}); -%>
+<%- include('./common.navbar.ejs', {user, util}); -%>
+<div class="container">
+    <%- include('./common.breadcrumbs.ejs', {crumbs: [
+        {title: "home", url:"/"}, 
+        {title: "admin", url:"/admin"},
+        {title: "brands", url: "/admin/brands", active: true}
+    ]}); -%>
+    <% if (brands.length > 0) {%>
+    <div class="row">
+        <div class="col-12">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th scope="col">ID</th>
+                        <th scope="col">Name</th>
+                        <th scope="col">Thumbnail</th>
+                        <th scope="col">Details</th>
+                        <th scope="col">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% brands.forEach((brand)=> { %>
+                    <tr id="brand_<%=brand.id%>">
+                        <th scope="row"><%=brand.id%></th>
+                        <td><%=brand.name%></td>
+                        <td><img src="<%=brand.thumbnail_url%>" width="50" height="50"></td>
+                        <td><a href="/admin/brands/<%=brand.id%>">Details</a></td>
+                        <td>
+                            <button class="btn btn-sm btn-danger" onclick="api.brand.deleteOne('<%=brand.id%>');">Delete</button> 
+                            <a class="btn btn-sm btn-info" href="/admin/brands/<%=brand.id%>/edit">Edit</a>
+                        </td>
+                    </tr>
+                    <%});%>
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <%} else {%>
+        <div class="row">
+            <div class="col-12">
+                <div class="alert alert-secondary" role="alert">No records</div>
+            </div>
+        </div>
+    <%}%>
+</div>
+<%- include('./common.footer.ejs'); -%>

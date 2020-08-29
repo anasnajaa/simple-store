@@ -8,3 +8,8 @@ exports.render = (req, res, next, url, data)=>{
 exports.flash =  (req, type, title, body)=>{
     req.flash('fm', {type, title, body});
 }
+
+exports.renderError =  (req, res, next, error)=>{
+    console.log(error);
+    res.redirect("/error");
+}

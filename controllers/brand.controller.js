@@ -1,106 +1,135 @@
-const { render } = require('../util/express');
-const leadModel = require('../models/leads.model');
+const { render, flash, renderError } = require('../util/express');
+const { logError } = require('../util/errorHandler');
+const brandModel = require('../models/brand.model');
+const v = require('../validators');
+const { isEmpty } = require('lodash');
+const e = require('express');
 
-exports.submit_brand = (req, res, next) => {
-    const email = req.body.lead_email;
+const viewList = 'admin.brand.list.ejs';
+const viewEdit = 'admin.brand.edit.ejs';
+const viewOne = 'admin.brand.details.ejs';
+const urlShowEditItem = (id)=> `/admin/brands/${id}/edit`;
+const urlShowItemsList = ()=> `/admin/brands/`;
 
-    leadModel.add_email(email)
-        .then(db=>{
-            if(db.rowCount === 1) {
-                //sendEmail(email);
-                res.redirect("/leads");
-            } else {
-                res.redirect("/error");
-            }
-        })
-        .catch(error=>{
-            console.log(error);
-            res.redirect("/error");
-        });
+exports.show_brand = async (req, res, next)=>{
+    try {
+        const id = req.params.id;
+        const brand = await brandModel.findOne(id);
+
+        if(brand) {
+            const data = {brand, errors: {}};
+            render(req, res, next, viewOne, data);
+        } else {
+            new Error("Item not found")
+        }
+    } catch (error) {
+        renderError(req, res, next, error);
+    }
 };
 
-exports.show_brands = (req, res, next)=>{
-    leadModel.findAll()
-        .then(rows=>{
-            const data = {leads: rows};
-            render(req, res, next, 'lead/leads_list', data);
-        })
-        .catch(error=>{
-            console.log(error);
-            res.redirect("/error");
-        });
+exports.show_brands = async (req, res, next)=>{
+    try {
+        const brands = await brandModel.findAll();
+        render(req, res, next, viewList, {brands});
+    } catch (error) {
+        renderError(req, res, next, error);
+    }
 };
 
-exports.show_brand = (req, res, next)=>{
-    const id = req.params.id;
+exports.show_edit_brand = async (req, res, next)=> {
+    try {
+        const id = req.params.id;
+        const brand = await brandModel.findOne(id);
 
-    leadModel.findOne(id)
-        .then(rows=>{
-            const data = {lead: rows[0]};
-            render(req, res, next, 'lead', data);
-        })
-        .catch(error=>{
-            console.log(error);
-            res.redirect("/error");
-        });
+        if(brand) {
+            const data = {brand, errors: {}};
+            render(req, res, next, viewEdit, data);
+        } else {
+            new Error("Item not found")
+        }
+    } catch (error) {
+        renderError(req, res, next, error);
+    }
 };
 
-exports.show_edit_brand = (req, res, next)=> {
-    const id = req.params.id;
+exports.submit_brand = async (req, res, next)=>{
+    try {
+        const errors = {};
+        const {name, thumnail_url} = req.body;
 
-    leadModel.findOne(id)
-        .then(rows=>{
-            const data = {lead: rows[0]};
-            render(req, res, next, 'lead/edit_lead', data);
-        })
-        .catch(error=>{
-            console.log(error);
-            res.redirect("/error");
-        });
+        v.vEmpty(errors, name, "name");
+        v.vBrandExist(errors, name, "name");
+    
+        if(!isEmpty(errors)){
+            res.render(req, res, next, viewEdit, {brand: req.body, errors});
+            return;
+        }
+
+        const brand = await brandModel.insertOne(name, thumnail_url);
+
+        if(brand){
+            flash(req, "success", null, "Record added");
+            req.redirect(urlShowItemsList());
+        } else {
+            flash(req, "danger", null, "Failed to insert record");
+            res.render(req, res, next, viewEdit, {brand: req.body, errors: {}});
+        }
+    } catch (error) {
+        renderError(req, res, next, error);
+    }
 };
 
-exports.edit_brand = (req, res, next)=> {
-    const id = req.params.id;
-    const email = req.body.lead_email;
+exports.edit_brand = async (req, res, next)=> {
+    try {
+        const errors = {};
+        const id = req.params.id;
+        const {brand_name, thumnail_url} = req.body;
 
-    leadModel.updateOne(id, email)
-        .then(rowsAffected=>{
-            console.log(rowsAffected);
-            res.redirect('/lead/'+id);
-        })
-        .catch(error=>{
-            console.log(error);
-            res.redirect("/error");
-        });
+        v.vEmpty(errors, brand_name, "brand_name");
+        v.vBrandExist(errors, brand_name, "brand_name");
+
+        if(!isEmpty(errors)){
+            res.render(req, res, next, viewEdit, {brand: req.body, errors});
+            return;
+        }
+
+        const brand = brandModel.updateOne(id, brand_name, thumnail_url);
+
+        if(brand){
+            flash(req, "success", null, "Record updated");
+            res.render(req, res, next, viewEdit, {brand, errors: {}});
+        } else {
+            flash(req, "danger", null, "Failed to update record");
+            res.render(req, res, next, viewEdit, {brand, errors: {}});
+        }
+    } catch (error) {
+        renderError(req, res, next, error);
+    }
 };
 
-exports.delete_brand = (req, res, next) => {
-    const id = req.params.id;
-
-    leadModel.deleteOne(id)
-        .then(rowsAffected=>{
-            console.log(rowsAffected);
-            res.redirect('/leads');
-        })
-        .catch(error=>{
-            console.log(error);
-            res.redirect("/error");
-        });
+exports.delete_brand = async (req, res, next) => {
+    try {
+        const id = req.params.id;
+        const recordsDeleted = brandModel.deleteOne(id);
+        if(recordsDeleted === 1){
+            flash(req, "success", null, "Record deleted"); 
+            res.redirect(urlShowItemsList());
+        } else {
+            flash(req, "danger", null, "Failed to delete record"); 
+            res.redirect(urlShowItemsList());
+        }
+    } catch (error) {
+        renderError(req, res, next, error);
+    }
 };
 
-exports.api_delete_brand = (req, res, next) => {
-    const id = req.params.id;
-  
-    leadModel.deleteOne(id)
-    .then(rowsAffected=>{
-        res.json({
-            deleted: rowsAffected
-        });
-    })
-    .catch(error=>{
-        console.log(error);
-        res.json({
-            error
-        });
-    });
+exports.api_delete_brand = async (req, res, next) => {
+    try {
+        const id = req.params.id;
+        const deleted = brandModel.deleteOne(id);
+        res.json({ deleted });
+    } catch (error) {
+        logError(error);
+        res.json({error});
+    }
 };

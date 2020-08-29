@@ -1,5 +1,6 @@
 const validator = require('validator');
 const userModel = require('../models/user.model');
+const brandModel = require('../models/brand.model');
 
 exports.vEmail = (errors, email)=> {
     if(!validator.isEmail(email)) {
@@ -26,6 +27,13 @@ exports.vUserExist = async (errors, email) => {
     const existingUser = await userModel.findOneByEmail(email);
     if(existingUser !== null){
         errors["email"] = "Account already exist";
+    }
+};
+
+exports.vBrandExist = async (key, errors, name) => {
+    const exist = await brandModel.findOneByName(name);
+    if(exist !== null){
+        errors[key] = "Brand already exist";
     }
 };
 

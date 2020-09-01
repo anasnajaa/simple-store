@@ -18,7 +18,7 @@ const apiRouter = require('./routes/api.router');
 require('./util/passport_setup')(passport);
 
 const app = express();
-
+app.use(require('express-status-monitor')());
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'ejs');
 

@@ -13,3 +13,32 @@ exports.renderError =  (req, res, next, error)=>{
     console.log(error);
     res.redirect("/error");
 }
+
+exports.getFilterQuery = (query)=>{
+    let { page, orderby, ordertype, recordsperpage, filtertext, filterby } = query;
+    page = parseInt(page) || 1;
+    orderby = orderby || "date_created";
+    ordertype = ordertype || "desc";
+    recordsperpage = parseInt(recordsperpage) || 5;
+    filtertext = filtertext || "";
+    filterby = filterby || "";
+    return {
+        page,
+        orderby,
+        ordertype,
+        recordsperpage,
+        filtertext,
+        filterby
+    };
+}
+
+exports.buildPaginationQuery = (query, page)=>{
+    let rQuery = "?";
+    rQuery+=`page=${page}&`
+    for(let key in query){
+        if(key!=="page"){
+            rQuery+=`${key}=${query[key]}&`
+        }
+    }
+    return rQuery;
+}

@@ -1,0 +1,69 @@
+<div class="row">
+    <div class="col-12 mb-2">
+        <% if(formObject.addButton.visible){%>
+        <a href="/admin/brands/add" class="btn btn-success <%=formObject.addButton.enabled ? "": "disabled"%>" type="button">
+            <i class="fas fa-plus-square"></i>
+        </a>
+        <%}%>
+        <% if(formObject.filterButton.visible){%>
+        <button class="btn btn-warning" <%=formObject.filterButton.enabled ? "": "disabled"%> type="button" data-toggle="collapse" data-target="#searchTools" aria-expanded="false" aria-controls="searchTools">
+            <i class="fas fa-filter"></i>
+        </button>
+        <%}%>
+    </div>
+    <div class="col-12 mb-2 collapse" id="searchTools">
+        <div class="card card-body">
+            <form method="POST" action="<%=formObject.querySubmitUrl%>">
+                <div class="form-row">
+                    <% if(formObject.filterFields && formObject.filterFields.length > 0){%>
+                        <div class="form-group col-md-4">
+                            <label for="inputSearch">Filter by </label>
+                            <select name="filterby" class="custom-select mr-sm-2">
+                                    <% for(let i=0; i<formObject.filterFields.length; i++){%>
+                                        <option value="<%=formObject.filterFields[i].value%>" 
+                                            <%=formObject.query.filterby === formObject.filterFields[i].value ? "selected":""%> >
+                                            <%=formObject.filterFields[i].title%></option>
+                                    <%}%>
+                            </select>
+                            <input name="filtertext" value="<%=formObject.query.filtertext%>" placeholder="Search Text" type="text" class="form-control" id="inputSearch">
+                        </div>
+                    <%}%>
+                    <div class="form-group col-md-4">
+                        <label for="inputOrderBy">Order by</label>
+                        <select name="orderby" id="inputOrderBy" class="form-control">
+                            <option value="date_created" <%=formObject.query.orderby === "date_created" ? "selected" : ""%>>Date Created</option>
+                            <option value="date_updated" <%=formObject.query.orderby === "date_updated" ? "selected" : ""%>>Date Updated</option>
+                            <% if(formObject.filterFields && formObject.filterFields.length > 0){%>
+                                <% for(let i=0; i<formObject.filterFields.length; i++){%>
+                                <option 
+                                    <%=formObject.query.orderby===formObject.filterFields[i].value ? "selected" : ""%>  
+                                    value="<%=formObject.filterFields[i].value%>">
+                                    <%=formObject.filterFields[i].title%>
+                                </option>
+                                <%}%>
+                            <%}%>
+                        </select>
+                    </div>
+                    <div class="form-group col-md-4">
+                        <label for="inputOrderType">Order type</label>
+                        <select name="ordertype" id="inputOrderType" class="form-control">
+                            <option value="desc" <%=formObject.query.ordertype === "desc" ? "selected" : ""%>>desc</option>
+                            <option value="asc" <%=formObject.query.ordertype === "asc" ? "selected" : ""%>>asc</option>
+                        </select>
+                    </div>
+                    <div class="form-group col-md-4">
+                        <label for="inputRecordPerPage">Records per page</label>
+                        <select name="recordsperpage" id="inputRecordPerPage" class="form-control">
+                            <option value="5" <%=formObject.query.recordsperpage === 5 ? "selected" : ""%>>5</option>
+                            <option value="10" <%=formObject.query.recordsperpage === 10 ? "selected" : ""%>>10</option>
+                            <option value="50" <%=formObject.query.recordsperpage === 50 ? "selected" : ""%>>50</option>
+                            <option value="100" <%=formObject.query.recordsperpage === 100 ? "selected" : ""%>>100</option>
+                        </select>
+                    </div>
+                </div>
+                <button tabindex="1" type="submit" name="submit" value="apply" class="btn btn-primary">Apply</button>
+                <button tabindex="2" type="submit" name="submit" value="reset" class="btn btn-info">Reset</button>
+            </form>
+        </div>
+    </div>
+</div>

@@ -13,3 +13,14 @@ exports.hasRole = (roles, roleName)=>{
     }
     return false;
 }
+
+exports.buildPaginationQuery = (query, page)=>{
+    let rQuery = "?";
+    rQuery+=`page=${page}&`
+    for(let key in query){
+        if(key!=="page"){
+            rQuery+=`${key}=${query[key]}&`
+        }
+    }
+    return rQuery;
+}

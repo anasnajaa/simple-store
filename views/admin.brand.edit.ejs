@@ -1,0 +1,33 @@
+<%- include('./common.header.ejs', {title: "Edit Lead"}); -%>
+<%- include('./common.navbar.ejs', {user, util}); -%>
+<div class="container">
+    <%- include('./common.breadcrumbs.ejs', {crumbs: [
+        {title: "home", url:"/"}, 
+        {title: "admin", url:"/admin"},
+        {title: "brands", url:"/admin/brands"},
+        {title: mode, url:null, active: true}
+    ]}); -%>
+    <div class="row">
+        <div class="col-12">
+            <%- include('./common.flash.ejs', {fm}); -%>
+            <form action="/admin/brands/<%=brand.id+"/"+mode%>" method="POST">
+                <div class="form-group">
+                    <label for="brandName">Name</label>
+                    <input name="name" type="text" class="form-control" id="brandName" value="<%=brand.name%>">
+                    <%if(errors && errors.name){%>
+                        <p class="small text-danger"><%=errors.name%></p>
+                    <%}%>
+                </div>
+                <div class="form-group">
+                    <label for="brandImage">Thumbnail URL</label>
+                    <input name="thumbnail_url" type="text" class="form-control" id="brandImage" value="<%=brand.thumbnail_url%>">
+                    <%if(errors && errors.thumbnail_url){%>
+                        <p class="small text-danger"><%=errors.thumbnail_url%></p>
+                    <%}%>
+                </div>
+                <button type="submit" class="btn btn-primary"><%=mode==="edit"? "Save" : "Add" %></button>
+            </form>
+        </div>
+    </div>
+</div>
+<%- include('./common.footer.ejs'); -%>

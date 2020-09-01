@@ -1,4 +1,4 @@
-const { render, flash, renderError } = require('../util/express');
+const { render, flash, renderError, getFilterQuery, buildPaginationQuery } = require('../util/express');
 const { logError } = require('../util/errorHandler');
 const brandModel = require('../models/brand.model');
 const v = require('../validators');
@@ -14,7 +14,7 @@ const urlShowItemsList = ()=> `/admin/brands/`;
 exports.show_brand = async (req, res, next)=>{
     try {
         const id = req.params.id;
-        const brand = await brandModel.findOne(id);
+        const brand = await brandModel.findOneById(id);
 
         if(brand) {
             const data = {brand, errors: {}};
@@ -29,8 +29,35 @@ exports.show_brand = async (req, res, next)=>{
 
 exports.show_brands = async (req, res, next)=>{
     try {
-        const brands = await brandModel.findAll();
-        render(req, res, next, viewList, {brands});
+        let query = {};
+        if(req.method === "POST" && req.body.submit === "apply"){
+            query = getFilterQuery(req.body);
+            res.redirect('/admin/brands' + buildPaginationQuery(query, 1));
+            return;
+        } else if(req.method === "POST" && req.body.submit === "reset"){
+            query = getFilterQuery({});
+        } else {
+            query = getFilterQuery(req.query);
+        }
+        const brands = await brandModel.findAllByQuery(query);
+        const count = brands && brands.length > 0 ? brands[0].count : 0;
+        render(req, res, next, viewList, {
+            brands, 
+            formObject: {
+                querySubmitUrl: "/admin/brands",
+                pagesCount: Math.ceil(count/query.recordsperpage),
+                query,
+                addButton: { visible: true, enabled: true, url: "/admin/brands/add" },
+                filterButton: { visible: true, enabled: true },
+                filterFields: [
+                    { title:"Brand Name", value: "name"}
+                ],
+            },
+            crumbs: [
+                {title: "home", url:"/"}, 
+                {title: "admin", url:"/admin"},
+                {title: "brands", url: "/admin/brands", active: true}
+            ]});
     } catch (error) {
         renderError(req, res, next, error);
     }
@@ -39,11 +66,10 @@ exports.show_brands = async (req, res, next)=>{
 exports.show_edit_brand = async (req, res, next)=> {
     try {
         const id = req.params.id;
-        const brand = await brandModel.findOne(id);
+        const brand = await brandModel.findOneById(id);
 
         if(brand) {
-            const data = {brand, errors: {}};
-            render(req, res, next, viewEdit, data);
+            render(req, res, next, viewEdit, {brand, mode: "edit", errors: {}});
         } else {
             new Error("Item not found")
         }
@@ -52,27 +78,42 @@ exports.show_edit_brand = async (req, res, next)=> {
     }
 };
 
-exports.submit_brand = async (req, res, next)=>{
+exports.show_add_brand = async (req, res, next)=> {
+    try {
+        const id = req.params.id;
+        const brand = await brandModel.findOneById(id);
+
+        if(brand) {
+            render(req, res, next, viewEdit, {brand, mode: "add", errors: {}});
+        } else {
+            new Error("Item not found")
+        }
+    } catch (error) {
+        renderError(req, res, next, error);
+    }
+};
+
+exports.add_brand = async (req, res, next)=>{
     try {
         const errors = {};
-        const {name, thumnail_url} = req.body;
+        const {name, thumbnail_url} = req.body;
 
         v.vEmpty(errors, name, "name");
         v.vBrandExist(errors, name, "name");
     
         if(!isEmpty(errors)){
-            res.render(req, res, next, viewEdit, {brand: req.body, errors});
+            render(req, res, next, viewEdit, {brand: req.body, mode: "add", errors});
             return;
         }
 
-        const brand = await brandModel.insertOne(name, thumnail_url);
+        const brand = await brandModel.insertOne(name, thumbnail_url);
 
         if(brand){
             flash(req, "success", null, "Record added");
             req.redirect(urlShowItemsList());
         } else {
             flash(req, "danger", null, "Failed to insert record");
-            res.render(req, res, next, viewEdit, {brand: req.body, errors: {}});
+            render(req, res, next, viewEdit, {brand: req.body, mode: "add", errors: {}});
         }
     } catch (error) {
         renderError(req, res, next, error);
@@ -83,24 +124,24 @@ exports.edit_brand = async (req, res, next)=> {
     try {
         const errors = {};
         const id = req.params.id;
-        const {brand_name, thumnail_url} = req.body;
+        const {name, thumbnail_url} = req.body;
 
-        v.vEmpty(errors, brand_name, "brand_name");
-        v.vBrandExist(errors, brand_name, "brand_name");
+        v.vEmpty(errors, name, "name");
+        v.vBrandExist(errors, name, "name");
 
         if(!isEmpty(errors)){
-            res.render(req, res, next, viewEdit, {brand: req.body, errors});
+            render(req, res, next, viewEdit, {brand: req.body, mode: "edit", errors});
             return;
         }
 
-        const brand = brandModel.updateOne(id, brand_name, thumnail_url);
-
+        const brand = await brandModel.updateOne(id, name, thumbnail_url);
+        console.log(brand);
         if(brand){
             flash(req, "success", null, "Record updated");
-            res.render(req, res, next, viewEdit, {brand, errors: {}});
+            render(req, res, next, viewEdit, {brand, mode: "edit", errors: {}});
         } else {
             flash(req, "danger", null, "Failed to update record");
-            res.render(req, res, next, viewEdit, {brand, errors: {}});
+            render(req, res, next, viewEdit, {brand, mode: "edit", errors: {}});
         }
     } catch (error) {
         renderError(req, res, next, error);
@@ -110,7 +151,7 @@ exports.edit_brand = async (req, res, next)=> {
 exports.delete_brand = async (req, res, next) => {
     try {
         const id = req.params.id;
-        const recordsDeleted = brandModel.deleteOne(id);
+        const recordsDeleted = await brandModel.deleteOne(id);
         if(recordsDeleted === 1){
             flash(req, "success", null, "Record deleted"); 
             res.redirect(urlShowItemsList());
@@ -126,7 +167,7 @@ exports.delete_brand = async (req, res, next) => {
 exports.api_delete_brand = async (req, res, next) => {
     try {
         const id = req.params.id;
-        const deleted = brandModel.deleteOne(id);
+        const deleted = await brandModel.deleteOne(id);
         res.json({ deleted });
     } catch (error) {
         logError(error);

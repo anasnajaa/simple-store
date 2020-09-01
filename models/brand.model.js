@@ -1,9 +1,50 @@
 const knex = require('knex')(require('../config/db-connect'));
 
-exports.findAll = async ()=>{
+exports.getCountByQuery = async (query)=>{
     try {
+        const filterby = query.filterby === undefined || 
+        query.filterby === null || 
+        query.filterby === "" ? "name" : query.filterby;
+        const filtertext = query.filtertext === undefined || 
+        query.filtertext === null || 
+        query.filtertext === "" ? "" : query.filtertext.toLowerCase();
         const rows = await knex('brands')
-        .select('id', 'name', 'thumbnail_url', 'date_created', 'date_updated');
+        .where(
+            knex.raw(`LOWER(${filterby}) LIKE ?`, `%${filtertext}%`)
+        )
+        .count('id');
+
+        if(rows && rows.length > 0){
+            return rows[0].count;
+        } else {
+            return 0;
+        }
+    } catch (error) {
+        console.log(error);
+        return 0;
+    }
+};
+
+exports.findAllByQuery = async (query)=>{
+    try {
+        
+        const filterby = query.filterby === undefined || 
+        query.filterby === null || 
+        query.filterby === "" ? "name" : query.filterby;
+        const filtertext = query.filtertext === undefined || 
+        query.filtertext === null || 
+        query.filtertext === "" ? "" : query.filtertext.toLowerCase();
+        const rows = await knex('brands')
+        .select(
+            knex.raw(`id, name, thumbnail_url, date_created, date_updated, count(*) OVER() AS count`)
+        )
+        //.select('id', 'name', 'thumbnail_url', 'date_created', 'date_updated')
+        .where(
+            knex.raw(`LOWER(${filterby}) LIKE ?`, `%${filtertext}%`)
+        )
+        .offset((query.page-1)*query.recordsperpage)
+        .limit(query.recordsperpage)
+        .orderBy(query.orderby, query.ordertype);
 
         if(rows && rows.length > 0){
             return rows;

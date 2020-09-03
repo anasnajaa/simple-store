@@ -1,0 +1,25 @@
+<%- include('./common.header.ejs', {title: "Lead Details"}); -%>
+<%- include('./common.navbar.ejs', {user, util}); -%>
+<div class="container">
+    <%- include('./common.breadcrumbs.ejs', {crumbs}); -%>
+    <div class="row">
+        <div class="col-12">
+            <h3>Add Category to <%=brand.name%></h3>
+            <form action="/admin/brands/<%=brand.id%>/add-category" method="POST">
+                <div class="form-group">
+                    <label for="selectBrandCategories">Select Category</label>
+                    <select name="category_id" class="form-control" id="selectBrandCategories">
+                        <% categories.forEach((category)=>{%>
+                            <option value="<%=category.id%>"><%=category.name%></option>
+                        <%})%>
+                    </select>
+                    <%if(errors && errors.category_id){%>
+                        <p class="small text-danger"><%=errors.category_id%></p>
+                    <%}%>
+                  </div>
+                <button type="submit" class="btn btn-primary">Add</button>
+            </form>
+        </div>
+    </div>
+</div>
+<%- include('./common.footer.ejs'); -%>

@@ -60,16 +60,42 @@ exports.findAllByQuery = async (query)=>{
 exports.findOneById = async (id)=>{
     try {
         const rows = await knex('brands')
-        .select('id', 'name', 'thumbnail_url', 'date_created', 'date_updated')
+        .select('brands.id', 
+        'brands.name', 
+        'brands.thumbnail_url', 
+        'brands_categories.id AS brand_category_id',
+        'brands_categories.category_id',
+        'categories.name AS category_name', 
+        'categories.thumbnail_url AS category_thumbnail_url', 
+        'brands.date_created', 
+        'brands.date_updated')
+        .leftJoin('brands_categories', 'brands_categories.brand_id', '=', 'brands.id')
+        .leftJoin('categories', 'categories.id', '=', 'brands_categories.category_id')
         .where({'brands.id': id});
-
+        
         if(rows && rows.length > 0){
-            return rows[0];
+            const brand = {...rows[0]};
+            delete brand.category_id;
+            delete brand.category_name;
+            delete brand.brand_category_id;
+            delete brand.category_thumbnail_url;
+            brand.categories = [];
+            if(rows[0].category_id !== null){
+                rows.forEach(row=>{
+                    brand.categories.push({
+                        id: row.category_id,
+                        brand_category_id: row.brand_category_id,
+                        name: row.category_name,
+                        thumbnail_url: row.category_thumbnail_url
+                    });
+                });
+            }
+            return brand;
         } else {
             return null;
         }
     } catch (error) {
-        console.log(error);
+        console.log( error);
         return null;
     }
 };
@@ -113,6 +139,26 @@ exports.updateOne = async (id, name, thumbnail_url)=>{
     }
 };
 
+exports.insertBrandCategory = async (brandId, categoryId)=>{
+    try {
+        const rows = await knex('brands_categories')
+        .insert({
+            category_id: categoryId,
+            brand_id: brandId
+          })
+        .returning('*');
+
+        if(rows && rows.length > 0){
+            return rows[0];
+        } else {
+            return null;
+        }
+    } catch (error) {
+        console.log(error);
+        return null;
+    }
+};
+
 exports.insertOne = async (name, thumbnail_url)=>{
     try {
         const rows = await knex('brands')
@@ -136,17 +182,34 @@ exports.insertOne = async (name, thumbnail_url)=>{
 
 exports.deleteOne = async (id)=>{
     try {
-        const rows = await knex('brands')
+        const affectedRows = await knex('brands')
         .where({'brands.id': id})
         .del();
 
-        if(rows && rows.length > 0){
-            return rows;
+        if(affectedRows && rows.length > 0){
+            return affectedRows;
         } else {
-            return null;
+            return 0;
         }
     } catch (error) {
         console.log(error);
-        return null;
+        return 0;
+    }
+};
+
+exports.deleteBrandCategory = async (id)=>{
+    try {
+        const affectedRows = await knex('brands_categories')
+        .where({'brands_categories.id': id})
+        .del();
+
+        if(affectedRows){
+            return affectedRows;
+        } else {
+            return 0;
+        }
+    } catch (error) {
+        console.log(error);
+        return 0;
     }
 };

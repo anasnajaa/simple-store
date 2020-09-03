@@ -1,18 +1,70 @@
 <%- include('./common.header.ejs', {title: "Lead Details"}); -%>
 <%- include('./common.navbar.ejs', {user, util}); -%>
 <div class="container">
+  <%- include('./common.breadcrumbs.ejs', {crumbs}); -%>
   <div class="row">
     <div class="col-12">
-      <h1>Lead: <%=lead.email %></h1>
-      <h4>Actions</h4>
-      <ul>
-        <li><a class="btn btn-info" href="/lead/<%=lead.id%>/edit">Edit</a></li>
-        <li>
-          <form action="/lead/<%=lead.id%>/delete" method="POST">
-            <button type="submit" class="btn btn-danger" >Delete</button>
-          </form>
-        </li>
-      </ul>
+      <%- include('./common.flash.ejs', {fm}); -%>
+      <h3>Brand Details</h3>
+      <table class="table">
+        <tbody>
+          <tr>
+            <th scope="row">ID</th>
+            <td><%=brand.id%></td>
+          </tr>
+          <tr>
+            <th scope="row">Thumbnail</th>
+            <td><%=brand.thumbnail_url%></td>
+          </tr>
+          <tr>
+            <th scope="row">Name</th>
+            <td><%=brand.name%></td>
+          </tr>
+          <tr>
+            <th scope="row">Date Created</th>
+            <td><%=brand.date_created%></td>
+          </tr>
+          <tr>
+            <th scope="row">Date Updated</th>
+            <td><%=brand.date_updated%></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="col-12">
+      <form action="/admin/brands/<%=brand.id%>/delete" method="POST"></form>
+      <a class="btn btn-info" href="/admin/brands/<%=brand.id%>/edit">Edit Brand Details</a>
+        <button type="submit" class="btn btn-danger"
+          onclick="return confirm('Are you sure you want to delete this record?')">Delete Brand</button>
+      </form>
+    </div>
+    <div class="col-12">
+      <hr/>
+      <h3>Brand Categories <a class="btn btn-success" href="/admin/brands/<%=brand.id%>/add-category"><i class="fas fa-plus-square"></i></a></h3>
+      <table class="table">
+        <thead>
+          <tr>
+            <th scope="col">Name</th>
+            <th scope="col">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <%if(brand.categories.length > 0){%>
+            <% brand.categories.forEach((category)=>{ %>
+            <tr id="brand_category_<%=category.brand_category_id%>">
+              <td><%=category.name%></td>
+            <td><button class="btn btn-sm btn-danger" 
+              onclick="if(confirm('Are you sure you want to delete this item?')){api.brand.deleteCategory('<%=category.brand_category_id%>')}">
+              Delete</button></td>
+            </tr>
+            <%})%>
+          <%} else {%>
+            <tr>
+              <td colspan="3">No Records</td>
+            </tr>
+          <%}%>
+        </tbody>
+      </table>
     </div>
   </div>
 </div>

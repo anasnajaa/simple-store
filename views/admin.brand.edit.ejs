@@ -1,12 +1,7 @@
 <%- include('./common.header.ejs', {title: "Edit Lead"}); -%>
 <%- include('./common.navbar.ejs', {user, util}); -%>
 <div class="container">
-    <%- include('./common.breadcrumbs.ejs', {crumbs: [
-        {title: "home", url:"/"}, 
-        {title: "admin", url:"/admin"},
-        {title: "brands", url:"/admin/brands"},
-        {title: mode, url:null, active: true}
-    ]}); -%>
+    <%- include('./common.breadcrumbs.ejs', {crumbs}); -%>
     <div class="row">
         <div class="col-12">
             <%- include('./common.flash.ejs', {fm}); -%>

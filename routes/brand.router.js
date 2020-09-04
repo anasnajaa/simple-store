@@ -7,7 +7,9 @@ exports.brandRoutes = (router)=>{
     
     router.get(`/brands/:id`, isAdmin, brand.show_brand);
     
-    router.get(`/brands/:id/edit`, isAdmin, brand.show_edit_brand);
+    router.get(`/brands/:id/edit`, isAdmin, (req, res, next)=>{
+        brand.show_edit_brand(req, res, next, {}, {});
+    });
     router.post(`/brands/:id/edit`, isAdmin, brand.edit_brand);
 
     router.get(`/brands/add`, isAdmin, brand.show_add_brand);

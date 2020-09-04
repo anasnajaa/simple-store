@@ -108,5 +108,16 @@ const util = {
             date = new Date(date);
         }
         return `${date.getDate()}/${date.getMonth() + 1}/${date.getFullYear()} - ${date.getHours()}:${date.getMinutes()}`
-    }
+    },
+    listenForFileChanges: (fileInputId, callback)=>{
+        document.getElementById(fileInputId).onchange = () => {
+            const files = document.getElementById(fileInputId).files;
+            const file = files[0];
+            if(file == null){ 
+                callback(null); 
+            } else {
+                callback(file);
+            }  
+        };
+    },
 };

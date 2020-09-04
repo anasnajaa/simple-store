@@ -11,6 +11,7 @@
     "url": "git+https://github.com/hecked12/simple-store.git"
   },
   "dependencies": {
+    "aws-sdk": "^2.745.0",
     "bcrypt": "^5.0.0",
     "connect-flash": "^0.1.1",
     "connect-mongo": "^3.2.0",

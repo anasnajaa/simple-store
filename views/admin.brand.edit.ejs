@@ -5,7 +5,7 @@
     <div class="row">
         <div class="col-12">
             <%- include('./common.flash.ejs', {fm}); -%>
-            <form action="/admin/brands/<%=brand.id+"/"+mode%>" method="POST">
+            <form action="/admin/brands/<%=brand.id+"/"+mode%>" method="POST" encType="multipart/form-data">
                 <div class="form-group">
                     <label for="brandName">Name</label>
                     <input name="name" type="text" class="form-control" id="brandName" value="<%=brand.name%>">
@@ -16,19 +16,18 @@
                 <div class="form-group">
                     <label for="brandImage">Thumbnail</label><br/>
                     <img class="img-fluid img-thumbnail" id="brand_preview" src="<%=brand.thumbnail_url%>" />
-                    <input type="file" class="form-control-file" id="u_brand_thumb">
-                    <input type="hidden" id="thumbnail_url" name="thumbnail_url" value="<%=brand.thumbnail_url%>">
+                    <input name="thumbnail_file" type="file" class="form-control-file" id="thumbnail_file">
                     <%if(errors && errors.thumbnail_url){%>
                         <p class="small text-danger"><%=errors.thumbnail_url%></p>
                     <%}%>
                 </div>
+                <div class="form-group form-check">
+                    <input name="delete_thumb" type="checkbox" class="form-check-input" id="delete_thumbnail">
+                    <label class="form-check-label" for="delete_thumbnail">Delete Thumbnail</label>
+                  </div>
                 <button type="submit" class="btn btn-primary"><%=mode==="edit"? "Save" : "Add" %></button>
             </form>
         </div>
     </div>
 </div>
-<%- include('./common.footer.ejs', {
-    scripts: [
-        'brand_edit.js'
-    ]
-}); -%>
+<%- include('./common.footer.ejs', {scripts: []}); -%>

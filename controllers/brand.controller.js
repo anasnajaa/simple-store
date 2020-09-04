@@ -5,6 +5,7 @@ const categoryModel = require('../models/category.model');
 const v = require('../validators');
 const { isEmpty } = require('lodash');
 const e = require('express');
+const awsS3Helper = require('../util/awsS3');
 
 const viewList = 'admin.brand.list.ejs';
 const viewEdit = 'admin.brand.edit.ejs';
@@ -18,7 +19,6 @@ exports.show_brand = async (req, res, next)=>{
     try {
         const id = req.params.id;
         const brand = await brandModel.findOneById(id);
-
         if(brand) {
             render(req, res, next, viewOne, {
                 brand, 
@@ -50,10 +50,10 @@ exports.show_brands = async (req, res, next)=>{
         } else {
             query = getFilterQuery(req.query);
         }
-        const brands = await brandModel.findAllByQuery(query);
-        const count = brands && brands.length > 0 ? brands[0].count : 0;
+        const response = await brandModel.findAllByQuery(query);
+        const count = response.count;
         render(req, res, next, viewList, {
-            brands, 
+            brands: response.records, 
             formObject: {
                 querySubmitUrl: "/admin/brands",
                 pagesCount: Math.ceil(count/query.recordsperpage),
@@ -148,24 +148,48 @@ exports.edit_brand = async (req, res, next)=> {
     try {
         const errors = {};
         const id = req.params.id;
-        const {name, thumbnail_url} = req.body;
+        const { name, delete_thumb } = req.body;
+        let thumbnail = null;
+
+        const rerenderEditPage = ()=>{
+            this.show_edit_brand(req, res, next, errors, req.body);
+        };
 
         v.vEmpty(errors, name, "name");
-        v.vBrandExist(errors, name, "name");
+        await v.vBrandExist("name", errors, name);
+        
+        if(req.files && !isEmpty(req.files) && req.files.thumbnail_file){
+            thumbnail = req.files.thumbnail_file;
+            v.vIsJpegFile("thumbnail_url", errors, thumbnail);
+        }
 
         if(!isEmpty(errors)){
-            this.show_edit_brand(req, res, next, errors, req.body);
+            rerenderEditPage();
             return;
         }
 
-        const brand = await brandModel.updateOne(id, name, thumbnail_url);
-        
-        if(brand){
+        const brand = await brandModel.findOneById(id);
+
+        if (thumbnail) {
+            const thumbUpdated = await brand.updateThumb(thumbnail);
+            if(!thumbUpdated){
+                errors["thumbnail_url"] = "Uploaded failed, please try again";
+                rerenderEditPage();
+                return;
+            }
+        } else if (delete_thumb){
+            await brand.deleteThumb();
+        }
+
+        brand.updateName(name);
+
+        if(brand.save()){
             flash(req, "success", null, "Record updated");
             res.redirect(urlShowBrandDetails(id));
         } else {
             flash(req, "danger", null, "Failed to update record");
-            this.show_edit_brand(req, res, next, errors, req.body);
+            rerenderEditPage();
+            return;
         }
     } catch (error) {
         renderError(req, res, next, error);

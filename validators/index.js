@@ -30,10 +30,10 @@ exports.vUserExist = async (errors, email) => {
     }
 };
 
-exports.vBrandExist = async (key, errors, name) => {
+exports.vBrandExist = async (fieldName, errors, name) => {
     const exist = await brandModel.findOneByName(name);
     if(exist !== null){
-        errors[key] = "Brand already exist";
+        errors[fieldName] = "Brand already exist";
     }
 };
 
@@ -41,6 +41,12 @@ exports.vUserDoesNotExist = async (errors, email) => {
     const existingUser = await userModel.findOneByEmail(email);
     if(existingUser === null){
         errors["email"] = "Account does not exist";
+    }
+};
+
+exports.vIsJpegFile = (fieldName, errors, file)=>{
+    if(file.mimetype !== "image/jpeg"){
+        errors[fieldName] = "Uploaded file must be a picture of type JPEG";
     }
 };
 

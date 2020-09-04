@@ -116,7 +116,7 @@ exports.add_brand = async (req, res, next)=>{
     }
 };
 
-exports.show_edit_brand = async (req, res, next)=> {
+exports.show_edit_brand = async (req, res, next, errors, formData)=> {
     try {
         const id = req.params.id;
         const brand = await brandModel.findOneById(id);
@@ -127,7 +127,8 @@ exports.show_edit_brand = async (req, res, next)=> {
                 brand, 
                 mode: "edit",
                 categories,
-                errors: {},
+                errors: errors || {},
+                formData: formData || {},
                 crumbs: [
                     {title: "home", url:"/"}, 
                     {title: "admin", url:"/admin"},
@@ -153,7 +154,7 @@ exports.edit_brand = async (req, res, next)=> {
         v.vBrandExist(errors, name, "name");
 
         if(!isEmpty(errors)){
-            render(req, res, next, viewEdit, {brand: req.body, mode: "edit", errors});
+            this.show_edit_brand(req, res, next, errors, req.body);
             return;
         }
 
@@ -161,10 +162,10 @@ exports.edit_brand = async (req, res, next)=> {
         
         if(brand){
             flash(req, "success", null, "Record updated");
-            render(req, res, next, viewEdit, {brand, mode: "edit", errors: {}});
+            res.redirect(urlShowBrandDetails(id));
         } else {
             flash(req, "danger", null, "Failed to update record");
-            render(req, res, next, viewEdit, {brand, mode: "edit", errors: {}});
+            this.show_edit_brand(req, res, next, errors, req.body);
         }
     } catch (error) {
         renderError(req, res, next, error);

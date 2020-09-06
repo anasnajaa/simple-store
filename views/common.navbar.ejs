@@ -23,6 +23,8 @@
           </a>
           <div class="dropdown-menu dropdown-menu-right" aria-labelledby="navbarDropdown">
             <a class="dropdown-item" href="#"><%=user.email%></a>
+            <div class="dropdown-divider"></div>
+            <a class="dropdown-item" href="/account">Account Settings</a>
             <% if(user && util.hasRole(user.roles, "admin")){%>
               <a class="dropdown-item" href="/admin">Admin Panel</a>
             <%}%>

@@ -11,10 +11,7 @@ const fileUpload = require('express-fileupload');
 
 const connectFlash = require('connect-flash');
 const { flash } = require('./util/express');
-
-const indexRouter = require('./routes/index.router');
-const adminRouter = require('./routes/admin.router');
-const apiRouter = require('./routes/api.router');
+const routes = require('./routes/index.router');
 
 require('./util/passport_setup')(passport);
 
@@ -55,9 +52,7 @@ app.use((req, res, next) => {
    next();
 });
 
-app.use('/', indexRouter);
-app.use('/admin', adminRouter);
-app.use('/api', apiRouter);
+routes.init(app);
 
 app.use((req, res, next) => {
   next(createError(404));

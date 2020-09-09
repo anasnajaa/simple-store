@@ -120,4 +120,51 @@ const util = {
             }  
         };
     },
+    buildGridQuery: (data) => {
+        let url = 'pagenum=' + data.pagenum + '&pagesize=' + data.pagesize;
+        url += '&filterscount=' + data.filterscount;
+        if (data.sortdatafield != null) {
+            url += '&sortdatafield=' + data.sortdatafield + '&sortorder=' + data.sortorder;
+        }
+        if (data.filterscount > 0) {
+            for (let i = 0; i < data.filterscount; i++) {
+                url += '&filtervalue' + i + '=' + data['filtervalue' + i] + '&filtercondition' + i + '=' + data['filtercondition' + i] + '&filterdatafield' + i + '=' + data['filterdatafield' + i] + '&filteroperator' + i + '=' + data['filteroperator' + i];
+            }
+        }
+        return url;
+    },
+    gridLocal: (gridElement)=>{
+        const localizationobj = {
+            filterstringcomparisonoperators: ['contains', 'null'],
+            filternumericcomparisonoperators: ['equal', 'less than', 'less than or equal', 'greater than', 'greater than or equal', 'null'],
+            filterdatecomparisonoperators: ['equal', 'not equal', 'less than', 'less than or equal', 'greater than', 'greater than or equal', 'null'],
+            filterbooleancomparisonoperators: ['equal', 'not equal']
+        }
+        gridElement.jqxGrid('localizestrings', localizationobj);
+    },
+    gridAdapter: (source, url)=> {
+        return new $.jqx.dataAdapter(source, {
+            contentType: "application/json;charset=UTF-8",
+            formatData: (data)=>{
+                source.url = url;
+                return JSON.stringify(data);
+            }
+        });
+    },
+    gridFilters: (type, defaultconditions) => {
+        var stringcomparisonoperators = ['CONTAINS', 'NULL'];
+        var numericcomparisonoperators = ['EQUAL', 'LESS_THAN', 'LESS_THAN_OR_EQUAL', 'GREATER_THAN', 'GREATER_THAN_OR_EQUAL', 'NULL'];
+        var datecomparisonoperators = ['EQUAL', 'NOT_EQUAL', 'LESS_THAN', 'LESS_THAN_OR_EQUAL', 'GREATER_THAN', 'GREATER_THAN_OR_EQUAL', 'NULL'];
+        var booleancomparisonoperators = ['EQUAL', 'NOT_EQUAL'];
+        switch (type) {
+            case 'stringfilter':
+                return stringcomparisonoperators;
+            case 'numericfilter':
+                return numericcomparisonoperators;
+            case 'datefilter':
+                return datecomparisonoperators;
+            case 'booleanfilter':
+                return booleancomparisonoperators;
+        }
+    }
 };

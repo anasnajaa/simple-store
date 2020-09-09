@@ -32,6 +32,30 @@ exports.getFilterQuery = (query)=>{
     };
 }
 
+exports.parseFilterQuery = (query)=>{
+    let { pagenum, 
+        pagesize, 
+        filterscount, 
+        sortdatafield, 
+        sortorder, 
+        filterGroups } = query;
+    pagenum = parseInt(pagenum) || 0;
+    pagesize = parseInt(pagesize) || 5;
+    filterscount = parseInt(filterscount) || 0;
+
+    sortdatafield = sortdatafield || "date_created";
+    sortorder = sortorder || "desc";
+    return {
+        pagenum,
+        pagesize,
+        filterscount,
+
+        sortdatafield,
+        sortorder,
+        filterGroups
+    };
+}
+
 exports.buildPaginationQuery = (query, page)=>{
     let rQuery = "?";
     rQuery+=`page=${page}&`

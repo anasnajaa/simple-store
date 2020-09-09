@@ -2,37 +2,10 @@
 <%- include('./common.navbar.ejs', {user, util}); -%>
 <div class="container">
     <%- include('./common.breadcrumbs.ejs', {crumbs}); -%>
-    <%- include('./common.admin.form_tools.ejs', {formObject}); -%>
     <div class="row">
-        <div class="col-12 mb-2">
-            <table class="table table-sm table-bordered table-hover">
-                <thead>
-                    <tr class="table-active">
-                        <th scope="col">Thumbnail</th>
-                        <th scope="col">Name</th>
-                        <th scope="col">Details</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <% if (brands.length > 0) {%>
-                        <% brands.forEach((brand)=> { %>
-                        <tr id="brand_<%=brand.id%>">
-                            <td><img src="<%=brand.thumbnail_url%>" width="50" height="50"></td>
-                            <td><%=brand.name%></td>
-                            <td><a class="btn btn-sm btn-info" href="/admin/brands/<%=brand.id%>">Details</a></td>
-                        </tr>
-                        <%});%>
-                    <%} else {%>
-                        <tr>
-                            <td colspan="3">No records</td>
-                        </tr>
-                    <%}%>
-                </tbody>
-            </table>
-        </div>
         <div class="col-12">
-            <%- include('./common.pagination.ejs', {pagination: formObject, util}); -%>
+            <div id="gvBrands"></div>
         </div>
+    </div>
 </div>
-</div>
-<%- include('./common.footer.ejs', {scripts: []}); -%>
+<%- include('./common.footer.ejs', {scripts: ["admin.brand.list.js"]}); -%>

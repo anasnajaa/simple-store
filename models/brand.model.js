@@ -1,5 +1,6 @@
 const knex = require('knex')(require('../config/db-connect'));
 const awsS3 = require('../util/awsS3');
+const queryHelper = require('../util/queryHelper');
 
 const isEmpty = (val)=>{
     return val === undefined || val === null || val === "";
@@ -146,6 +147,59 @@ exports.findAllByQuery = async (query)=>{
             .leftJoin('categories', 'categories.id', '=', 'brands_categories.category_id')
             .whereIn('brands.id', getIds(brandsList))
             .orderBy("brands."+query.orderby, query.ordertype);
+
+            if(r && r.length > 0){
+                return { records: buildModel(r), count }
+            } else {
+                return { records: [], count: 0 };
+            }
+        } else {
+            return { records: [], count: 0 };
+        }
+    } catch (error) {
+        console.log(error);
+        return { records: [], count: 0 };
+    }
+};
+
+exports.findAll = async (query)=>{
+    try {
+        const brandsList = await knex('brands')
+        .select('brands.id', 'brands.name')
+        .select(knex.raw(`count(*) OVER() AS count`))
+        .leftJoin('brands_categories', 'brands_categories.brand_id', '=', 'brands.id')
+        .leftJoin('categories', 'categories.id', '=', 'brands_categories.category_id')
+        .where((builder) => {
+            const ignoreFields = [];
+            const transformFields = {
+                name: "brands.name",
+                categories: "categories.name",
+                date_created: "brands.date_created",
+                date_updated: "brands.date_updated"
+            }
+            queryHelper.parseWhereQueries(query, transformFields, ignoreFields, builder);
+        })
+        .offset((query.pagenum)*query.pagesize)
+        .limit(query.pagesize)
+        .orderBy(`brands.${query.sortdatafield}`, query.sortorder)
+        .groupBy('brands.id', 'brands.name');
+
+        if(brandsList && brandsList.length > 0){
+            const count = brandsList[0].count;
+            const r = await knex('brands')
+            .select('brands.id', 
+            'brands.name', 
+            'brands.thumbnail', 
+            'brands_categories.id AS brand_category_id',
+            'brands_categories.category_id',
+            'categories.name AS category_name', 
+            'categories.thumbnail_url AS category_thumbnail_url', 
+            'brands.date_created', 
+            'brands.date_updated')
+            .leftJoin('brands_categories', 'brands_categories.brand_id', '=', 'brands.id')
+            .leftJoin('categories', 'categories.id', '=', 'brands_categories.category_id')
+            .whereIn('brands.id', getIds(brandsList))
+            .orderBy(`brands.${query.sortdatafield}`, query.sortorder);
 
             if(r && r.length > 0){
                 return { records: buildModel(r), count }

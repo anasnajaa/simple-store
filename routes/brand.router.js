@@ -3,8 +3,9 @@ const brand = require('../controllers/brand.controller');
 
 exports.brandRoutes = (router)=>{
     router.get('/brands', isAdmin, brand.show_brands);
-    router.post('/brands', isAdmin, brand.show_brands);
     
+    router.post('/brands/all', isAdmin, brand.brand_grid_data);
+
     router.get(`/brands/:id`, isAdmin, brand.show_brand);
     
     router.get(`/brands/:id/edit`, isAdmin, (req, res, next)=>{

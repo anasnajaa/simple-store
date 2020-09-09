@@ -1,4 +1,4 @@
-const { render, flash, renderError, getFilterQuery, buildPaginationQuery } = require('../util/express');
+const { render, flash, renderError, getFilterQuery, buildPaginationQuery, parseFilterQuery } = require('../util/express');
 const { logError } = require('../util/errorHandler');
 const brandModel = require('../models/brand.model');
 const categoryModel = require('../models/category.model');
@@ -40,30 +40,7 @@ exports.show_brand = async (req, res, next)=>{
 
 exports.show_brands = async (req, res, next)=>{
     try {
-        let query = {};
-        if(req.method === "POST" && req.body.submit === "apply"){
-            query = getFilterQuery(req.body);
-            res.redirect('/admin/brands' + buildPaginationQuery(query, 1));
-            return;
-        } else if(req.method === "POST" && req.body.submit === "reset"){
-            query = getFilterQuery({});
-        } else {
-            query = getFilterQuery(req.query);
-        }
-        const response = await brandModel.findAllByQuery(query);
-        const count = response.count;
         render(req, res, next, viewList, {
-            brands: response.records, 
-            formObject: {
-                querySubmitUrl: "/admin/brands",
-                pagesCount: Math.ceil(count/query.recordsperpage),
-                query,
-                addButton: { visible: true, enabled: true, url: "/admin/brands/add" },
-                filterButton: { visible: true, enabled: true },
-                filterFields: [
-                    { title:"Brand Name", value: "name"}
-                ],
-            },
             crumbs: [
                 {title: "home", url:"/"}, 
                 {title: "admin", url:"/admin"},
@@ -71,6 +48,17 @@ exports.show_brands = async (req, res, next)=>{
             ]});
     } catch (error) {
         renderError(req, res, next, error);
+    }
+};
+
+exports.brand_grid_data = async (req, res, next)=>{
+    try {
+        const query = parseFilterQuery(req.body);
+        const response = await brandModel.findAll(query);
+        res.json(response);
+    } catch (error) {
+        console.log(error);
+        res.json(error);
     }
 };
 

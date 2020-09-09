@@ -35,7 +35,7 @@ app.use(session({
     url: process.env.ATLAS_URI_RW
   }),
   cookie: {
-    maxAge: 1 * 1 * 60 * 1000 //1 hour
+    maxAge: 1 * 5 * 60 * 1000 //1 hour
   }
 }));
 

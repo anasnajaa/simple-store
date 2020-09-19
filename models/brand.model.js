@@ -33,16 +33,26 @@ const buildModel = (brands)=>{
         delete uBrands[i].category_id;
         delete uBrands[i].category_name;
         delete uBrands[i].brand_category_id;
-        delete uBrands[i].category_thumbnail_url;
+        delete uBrands[i].category_thumbnail;
         uBrands[i].categories = [];
         for(let k in brands){
             if(brands[k].id === uBrands[i].id && brands[k].category_id !== null){
-                uBrands[i].categories.push({
+                const category = {
                     id: brands[k].category_id,
                     brand_category_id: brands[k].brand_category_id,
                     name: brands[k].category_name,
-                    thumbnail_url: brands[k].category_thumbnail_url
-                });
+                    thumbnail: brands[k].category_thumbnail
+                };
+
+                category.thumbExist = ()=> {
+                    return category.thumbnail !== null && category.thumbnail !== "";
+                };
+
+                if(category.thumbExist()){
+                    category.thumbnail_url = awsS3.fileUrl(category.thumbnail);
+                } 
+
+                uBrands[i].categories.push(category);
             }
         }
     }
@@ -140,7 +150,7 @@ exports.findAllByQuery = async (query)=>{
             'brands_categories.id AS brand_category_id',
             'brands_categories.category_id',
             'categories.name AS category_name', 
-            'categories.thumbnail_url AS category_thumbnail_url', 
+            'categories.thumbnail AS category_thumbnail', 
             'brands.date_created', 
             'brands.date_updated')
             .leftJoin('brands_categories', 'brands_categories.brand_id', '=', 'brands.id')
@@ -149,7 +159,7 @@ exports.findAllByQuery = async (query)=>{
             .orderBy("brands."+query.orderby, query.ordertype);
 
             if(r && r.length > 0){
-                return { records: buildModel(r), count }
+                return { records: buildModel(r), count };
             } else {
                 return { records: [], count: 0 };
             }
@@ -193,7 +203,7 @@ exports.findAll = async (query)=>{
             'brands_categories.id AS brand_category_id',
             'brands_categories.category_id',
             'categories.name AS category_name', 
-            'categories.thumbnail_url AS category_thumbnail_url', 
+            'categories.thumbnail AS category_thumbnail', 
             'brands.date_created', 
             'brands.date_updated')
             .leftJoin('brands_categories', 'brands_categories.brand_id', '=', 'brands.id')
@@ -224,7 +234,7 @@ exports.findOneById = async (id)=>{
         'brands_categories.id AS brand_category_id',
         'brands_categories.category_id',
         'categories.name AS category_name', 
-        'categories.thumbnail_url AS category_thumbnail_url', 
+        'categories.thumbnail AS category_thumbnail', 
         'brands.date_created', 
         'brands.date_updated')
         .select(knex.raw(`${1} AS count`))

@@ -30,7 +30,7 @@ const admin_brand_list = ()=>{
     const adapter = new $.jqx.dataAdapter(source, {
         contentType: "application/json;charset=UTF-8",
         formatData: (data)=>{
-            source.url = "/admin/brands/all";
+            source.url = "/api/brands";
             return JSON.stringify(data);
         }
     });
@@ -124,7 +124,7 @@ const admin_brand_list = ()=>{
                 cellsrenderer: () => {return `Edit`;},
                 buttonclick: (rowIndex) => {
                     const record = grid.jqxGrid("getrowdata", rowIndex);
-                    window.location = `/admin/brands/${record.id}/edit`;
+                    window.location = `/admin/brands/${record.id}`;
                 }
             },
             {

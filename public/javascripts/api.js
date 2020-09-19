@@ -52,9 +52,97 @@ const api = {
         }
     },
     brand: {
+        getOne: async (id) => {
+            try {
+                const response = await fetch(`${api.endpoint}/brands/${id}`, {method: "GET"});
+                if (response.ok) {
+                    return await response.json();
+                } else {
+                    return null;
+                }
+            } catch (error) {
+                console.log(error);
+                return null;
+            }
+        },
+        postOne: async (id, data) => {
+            try {
+                const response = await fetch(`${api.endpoint}/brands/${id ? id : ""}`, 
+                {
+                    method: "POST",
+                    body: JSON.stringify(data),
+                    headers: {"Content-type": "application/json;charset=UTF-8"} 
+                });
+                if (response.ok) {
+                    return await response.json();
+                } else {
+                    return null;
+                }
+            } catch (error) {
+                console.log(error);
+                return null;
+            }
+        },
+        uploadThumbnail: async (id, fileInputId) => {
+            try {
+                const inputFile = document.getElementById(fileInputId);
+                const formData = new FormData();
+                formData.append('file_brand_thumbnail', inputFile.files[0]);
+                const response = await fetch(`${api.endpoint}/brands/${id}/upload/thumbnail`, 
+                {
+                    method: "POST",
+                    body: formData
+                });
+                if (response.ok) {
+                    return await response.json();
+                } else {
+                    return null;
+                }
+            } catch (error) {
+                console.log(error);
+                return null;
+            }
+        },
+        removeThumbnail: async (id) => {
+            try {
+                const formData = new FormData();
+                formData.append('delete_thumb', "1");
+                const response = await fetch(`${api.endpoint}/brands/${id}/upload/thumbnail`, 
+                {
+                    method: "POST",
+                    body: formData
+                });
+                if (response.ok) {
+                    return await response.json();
+                } else {
+                    return null;
+                }
+            } catch (error) {
+                console.log(error);
+                return null;
+            }
+        },
+        updateOne: async (id, data) => {
+            try {
+                const response = await fetch(`${api.endpoint}/brands/${id}`, 
+                {
+                    method: "PUT",
+                    body: JSON.stringify(data),
+                    headers: {"Content-type": "application/json;charset=UTF-8"} 
+                });
+                if (response.ok) {
+                    return await response.json();
+                } else {
+                    return null;
+                }
+            } catch (error) {
+                console.log(error);
+                return null;
+            }
+        },
         deleteOne: async (id) => {
             try {
-                const response = await fetch(`${api.endpoint}/brand/${id}`, {
+                const response = await fetch(`${api.endpoint}/brands/${id}`, {
                     method: "DELETE"
                 });
                 if (response.ok) {
@@ -85,4 +173,19 @@ const api = {
             }
         }
     },
+    category: {
+        getAll: async () => {
+            try {
+                const response = await fetch(`${api.endpoint}/categories`, {method: "GET"});
+                if (response.ok) {
+                    return await response.json();
+                } else {
+                    return null;
+                }
+            } catch (error) {
+                console.log(error);
+                return null;
+            }
+        },
+    }
 };

@@ -1,19 +1,11 @@
 <%- include('./common.header.ejs', {title: "Simple Store"}); -%>
 <%- include('./common.navbar.ejs', {user, util}); -%>
-<div class="container">
+<div class="container mt-3">
   <div class="jumbotron">
-    <h1 class="display-4">Welcome to simple store!</h1>
-    <p class="lead">This is a simple store website with admin panel and a shopping cart.</p>
+    <h1 class="display-4">Simple Store API/Admin Panel</h1>
+    <p class="lead">API endpoints and admin pages are available on this domain.</p>
     <hr class="my-4">
-    <p>It uses Node, express, ejs, postgress and bootstrap.</p>
-    <a class="btn btn-primary btn-lg" href="#" role="button">Learn more</a>
-  </div>
-  <div class="row">
-    <% for(let i =0; i< 100; i++){ %>
-      <div class="col-12 col-sm-12 col-md-3 col-lg-3 col-xol-3">
-        <%- include('./store.item.ejs'); -%>
-      </div>
-      <%}%>
+    <a class="btn btn-primary btn-lg" href="#" role="button">Api Docs</a>
   </div>
 </div>
 <%- include('./common.footer.ejs', {scripts: []}); -%>

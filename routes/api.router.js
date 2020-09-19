@@ -1,12 +1,15 @@
 const express = require('express');
 const router = express.Router();
 const { isAdmin } = require('../middleware/hasAuth');
-const brand = require('../controllers/brand.controller');
+const brandApiRouter = require('./api.brands.router');
+const categoriesApiRouter = require('./api.categories.router');
+const accountApiRouter = require('./api.account.router');
 const awsS3 = require('../util/awsS3');
 const {v4} = require('uuid');
-router.delete('/brand/:id', isAdmin, brand.api_delete_brand);
 
-router.delete('/brand-category/:id', isAdmin, brand.api_delete_brand_category);
+brandApiRouter.init(router);
+categoriesApiRouter.init(router);
+accountApiRouter.init(router);
 
 router.get('/sign-s3', isAdmin, async (req, res, next)=>{
     const fileName = v4() +"."+ req.query['file-name'].split(".")[1];

@@ -1,5 +1,7 @@
 const nodemailer = require("nodemailer");
 require('dotenv').config();
+const environment = process.env.NODE_ENV;
+const stage = require('../config/index')[environment];
 
 exports.sendMail = async function(mailObject, logMessage) {
     // let transporter = nodemailer.createTransport({
@@ -18,8 +20,8 @@ exports.sendMail = async function(mailObject, logMessage) {
     let transporter = nodemailer.createTransport({
         service: 'gmail',
         auth: {
-          user: process.env.EMAIL_USER,
-          pass: process.env.EMAIL_PASS
+          user: stage.mailer.user,
+          pass: stage.mailer.password
         }
     });
 

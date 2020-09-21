@@ -13,10 +13,9 @@ const MongoStore = require('connect-mongo')(session);
 const fileUpload = require('express-fileupload');
 
 const connectFlash = require('connect-flash');
-const { flash } = require('./util/express');
-const routes = require('./routes/index.router');
+const routes = require('./routes/index.r');
 
-require('./util/passport_setup')(passport);
+require('./util/passportSetup')(passport);
 
 const environment = process.env.NODE_ENV;
 const stage = require('./config/index')[environment];

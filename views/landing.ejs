@@ -1,5 +1,5 @@
-<%- include('./common.header.ejs', {title: "Simple Store"}); -%>
-<%- include('./common.navbar.ejs', {user, util}); -%>
+<%- include('./common/header.ejs', {title: "Simple Store"}); -%>
+<%- include('./common/navbar.ejs', {user, util}); -%>
 <div class="container mt-3">
   <div class="jumbotron">
     <h1 class="display-4">Simple Store API/Admin Panel</h1>
@@ -8,4 +8,4 @@
     <a class="btn btn-primary btn-lg" href="#" role="button">Api Docs</a>
   </div>
 </div>
-<%- include('./common.footer.ejs', {scripts: []}); -%>
+<%- include('./common/footer.ejs', {scripts: []}); -%>

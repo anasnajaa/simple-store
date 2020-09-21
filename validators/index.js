@@ -1,6 +1,6 @@
 const validator = require('validator');
-const userModel = require('../models/user.model');
-const brandModel = require('../models/brand.model');
+const userModel = require('../models/user.m');
+const brandModel = require('../models/brand.m');
 
 exports.vEmail = (errors, email)=> {
     if(!validator.isEmail(email)) {

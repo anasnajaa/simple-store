@@ -3,42 +3,11 @@ const { logError } = require('../util/errorHandler');
 const brandModel = require('../models/brand.m');
 const v = require('../validators');
 const { isEmpty } = require('lodash');
-const e = require('express');
 
-const viewList = 'admin/brands/list';
 const viewOne = 'admin/brands/details';
 const urlShowBrandDetails = (id)=> `/admin/brands/${id}`;
 const urlShowItemsList = ()=> `/admin/brands/`;
 
-exports.page_add_edit_brand = async (req, res, next)=>{
-    try {
-        const id = req.params.id || 0;
-        render(req, res, next, viewOne, {
-            recordid: id, 
-            crumbs: [
-                {title: "home", url:"/"}, 
-                {title: "admin", url:"/admin"},
-                {title: "brands", url: "/admin/brands"},
-                {title: id === 0 ? "Add" : "Edit", url: "/admin/brands", active: true},
-            ]
-        });
-    } catch (error) {
-        renderError(req, res, next, error);
-    }
-};
-
-exports.page_brands = async (req, res, next)=>{
-    try {
-        render(req, res, next, viewList, {
-            crumbs: [
-                {title: "home", url:"/"}, 
-                {title: "admin", url:"/admin"},
-                {title: "brands", url: "/admin/brands", active: true}
-            ]});
-    } catch (error) {
-        renderError(req, res, next, error);
-    }
-};
 
 exports.get_brand = async (req, res, next)=>{
     try {

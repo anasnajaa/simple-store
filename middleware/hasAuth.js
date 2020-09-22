@@ -4,61 +4,10 @@ const stage = require('../config/index')[environment];
 const r = require('../util/codedResponses');
 const jwt = require('jsonwebtoken');
 
-const hasRole = (roles, roleName) => {
-    for (let i = 0; i < roles.length; i++) {
-        if (roles[i].name === roleName) {
-            return true;
-        }
-    }
-    return false;
-}
-
-exports.isLoggedIn = (req, res, next) => {
-    if (req.user) {
-        next();
-    } else {
-        next(createError(401, "You must be logged in to view this page"));
-    }
-}
-
-exports.isLoggedOut = (req, res, next) => {
-    if (req.user === undefined || req.user === null) {
-        next();
-    } else {
-        next(createError(401, "You cannot access this page right now"));
-    }
-}
-
-exports.isAdmin = (req, res, next) => {
-    if (req.user && req.user.roles && req.user.roles.length > 0) {
-        const roles = req.user.roles;
-        if (hasRole(roles, "admin")) {
-            next();
-        } else {
-            next(createError(401, "Only logged in admins can view this page"));
-        }
-    } else {
-        next(createError(401, "Only logged in admins can view this page"));
-    }
-}
-
-exports.isCustomer = (req, res, next) => {
-    if (req.user && req.user.roles && req.user.roles.length > 0) {
-        const roles = req.user.roles;
-        if (hasRole(roles, "customer")) {
-            next();
-        } else {
-            next(createError(401, "Only logged in customers can view this page"));
-        }
-    } else {
-        next(createError(401, "Only logged in customers can view this page"));
-    }
-}
-
 const retriveJwtToken = (req)=> {
     return new Promise((resolve, reject) => {
+        const t = req.__;
         try {
-            const t = req.__;
             const jwtToken = req.cookies.token || null;
 
             const user = jwt.verify(jwtToken, stage.jwtSecret, stage.jwtOption);
@@ -76,9 +25,9 @@ const retriveJwtToken = (req)=> {
     });
 }
 
-exports.jwt_isLoggedIn = async (req, res, next) => {
+exports.isLoggedIn = async (req, res, next) => {
+    const t = req.__;
     try {
-        const t = req.__;
         const user = await retriveJwtToken(req);
         req.user = user;
         next();
@@ -91,9 +40,9 @@ exports.jwt_isLoggedIn = async (req, res, next) => {
     }
 }
 
-exports.jwt_isAdmin = async (req, res, next) => {
+exports.isAdmin = async (req, res, next) => {
+    const t = req.__;
     try {
-        const t = req.__;
         const user = await retriveJwtToken(req);
         for(let i in user.roles){
             if(user.roles[i].id === 1){

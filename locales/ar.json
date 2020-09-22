@@ -35,5 +35,6 @@
     "registration_success_check_email": "Registration Successful, please verifiy your account by clicking the link sent to your email",
     "validation_exception": "Error while validating this field",
     "old_password_incorrect": "Old password is incorrect",
-    "you_dont_have_permission": "You don't have required permission"
+    "you_dont_have_permission": "You don't have required permission",
+    "brands": "Brands"
 }

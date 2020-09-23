@@ -1,16 +1,17 @@
 require('dotenv').config();
-const userModel = require('../models/user.m');
-const bcrypt = require('bcrypt');
-const { validateUserSignup, vEmail, vEmpty } = require('../validators');
-const { isEmpty } = require('lodash');
-const mailer = require('../util/mailer');
-const { v4 } = require('uuid');
-const jwtAuth = require('../util/jwtAuth');
-
 const environment = process.env.NODE_ENV;
 const stage = require('../config/index')[environment];
-
 const r = require('../util/codedResponses');
+const {apiError} = require('../util/errorHandler');
+
+const userModel = require('../models/user.m');
+const bcrypt = require('bcrypt');
+const { vEmail, vEmpty, vPassword, vUserExist } = require('../validators');
+const { isEmpty } = require('lodash');
+const { v4 } = require('uuid');
+const jwtAuth = require('../util/jwtAuth');
+const accountActivationEmail = require('../email/accountActivation');
+const welcomeEmail = require('../email/welcomeEmail');
 
 const validPassword = (user, password) => {
     return bcrypt.compareSync(password, user.password);
@@ -20,96 +21,102 @@ const generateHash = (password) =>{
     return bcrypt.hashSync(password, bcrypt.genSaltSync(8), null);
 };
 
-const sendActivationEmail = (user) => {
-    mailer.sendMail({
-        from: process.env.EMAIL_USER,
-        to: user.email,
-        subject: "Simple Store - Activation Instructions",
-        html: `Please click on this link to activate your account: ${user.activation_id}`
-    }, "email sent").catch(console.error);
-};
-
-const sendWelcomeEmail = (user) => {
-    mailer.sendMail({
-        from: process.env.EMAIL_USER,
-        to: user.email,
-        subject: "Simple Store - Welcome!",
-        html: `Hello ${user.email}, welcome to simple store.`
-    }, "email sent").catch(console.error);
-};
-
-exports.admin_signup = async (req, res, next) => {
-    const email = req.body.email;
-    const plainTextPassword = req.body.password;
-    const password = generateHash(plainTextPassword);
+exports.register = async (req, res, next) => {
+    const t = req.__;
+    const {
+        email,
+        password,
+        firstName,
+        lastName,
+        phone
+    } = req.body;
+    
+    let errors = {};
 
     try {
-        const errors = await validateUserSignup({}, email, plainTextPassword);
+        vEmpty(errors, firstName, "firstName");
+        vEmpty(errors, lastName, "lastName");
+        vEmail(errors, email);
+        vPassword(errors, password);
+        
+        if(isEmpty(errors)){
+            await vUserExist(errors, email);
+        }
 
         if(!isEmpty(errors)){
-            rerender_signup(errors, req, res, next);
+            res.json({status: -1, validationErrors: errors})
             return;
         }
 
         const userObject = {
+            first_name: firstName,
+            last_name: lastName,
             email,
-            password,
+            password: generateHash(password),
             username: email,
             date_created: new Date(),
             is_active: false,
             activation_id: v4()
         };
 
-        userModel.addNewCustomer(userObject, (error, createdUser)=>{
-            if(error){
-                //flash(req, "danger", null, "Account creation failed");
-                //render(req, res, next, viewSignup, {formData: req.body, errors});
-                return;
-            } else {
-                sendActivationEmail(createdUser);
-                sendWelcomeEmail(createdUser);
-                //flash(req, "success", "Account created!", "Please check your email for instructions on how to activate your account");
-                //render(req, res, next, viewLogin, {formData: {}, errors: {}});
-            }
-        });
+        const addedUserDetails = await userModel.addNewCustomer(userObject, phone);
+
+        accountActivationEmail.sendEmail(t, addedUserDetails.user);
+        welcomeEmail.sendEmail(t, addedUserDetails.user);
+
+        res.json({status: 1, message: r.registration_success_check_email(t)});
 
     } catch (error) {
-        //flash(req, "danger", null, error);
-        //render(req, res, next, viewSignup, {});
+        apiError(res, error);
     }
 };
 
-exports.admin_login = (req, res, next) => {
-    const email = req.body.email;
-    const plainTextPassword = req.body.password;
-    const rememberUser = req.body.remember;
-    let errors = {};
+exports.activateAccount = async (req, res, next) => {
+    const t = req.__;
     try {
-        vEmail(errors, email);
-        vEmpty(errors, plainTextPassword, "password");
+        const key = req.query.key;
+        let errors = {};
+        vEmpty(errors, key, "key");
 
         if(!isEmpty(errors)){
-            //rerender_login(errors, req, res, next);
+            res.json({status: -1, validationErrors: errors})
             return;
         }
-    } catch(error) {
-        //flash(req, "danger", null, error);
-        //render(req, res, next, viewLogin, {});
+        
+        const user = await userModel.activateUser(key);
+
+        if(user){
+            res.json({status: 1, message: r.account_verified_you_can_login(t)});
+        } else {
+            res.json({status: -1, message: r.invalid_activation_key(t)});
+        }
+    } catch (error) {
+        apiError(res, error);
     }
 };
 
-exports.admin_logout = (req, res, next) => {
+exports.verifyMobile = async (req, res, next) => {
+
 };
 
-exports.api_login = async (req, res, next) => {
+exports.login = async (req, res, next) => {
     const t = req.__;
     try {
         const {username, password} = req.body;
+        let errors = {};
+
+        vEmail(errors, username);
+        vEmpty(errors, password, "password");
 
         const user = await userModel.findOneByEmail(username);
         
         if(user === null){
             res.json({status: -1, message: r.account_doesnt_exist_active(t)});
+            return;
+        }
+
+        if(!user.is_active){
+            res.json({status: -1, message: r.you_must_verifiy_account_to_login(t)});
             return;
         }
         
@@ -140,11 +147,11 @@ exports.api_login = async (req, res, next) => {
             res.json({status: -1, error: r.failed_to_login_contact_support(t)});
         }
     } catch (error) {
-        res.status(500).json({ error });
+        apiError(res, error);
     }
 }
 
-exports.api_logout = (req, res, next) => {
+exports.logout = (req, res, next) => {
     const tr = req.__;
     try {
         res.cookie('token', '', {
@@ -155,11 +162,11 @@ exports.api_logout = (req, res, next) => {
             overwrite: true
           }).json({status: 1});
     } catch (error) {
-        req.status(500).json({ error });
+        apiError(res, error);
     }
 }
 
-exports.api_profile = async (req, res, next) => {
+exports.profile = async (req, res, next) => {
     try {
         const jwtUser = req.user;
         const user = await userModel.findOneByEmail(jwtUser.email);
@@ -175,6 +182,6 @@ exports.api_profile = async (req, res, next) => {
         });
 
     } catch (error) {
-        req.status(500).json({ error });
+        apiError(res, error);
     }
 }

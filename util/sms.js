@@ -1,6 +1,6 @@
 require('dotenv').config();
 const environment = process.env.NODE_ENV;
-const stage = require('./config/index')[environment];
+const stage = require('../config/index')[environment];
 const client = require('twilio')(stage.sms.accountSid, stage.sms.authToken);
 const smsModel = require('../models/sms.m');
 

@@ -130,6 +130,27 @@ exports.activateUser = async (key)=>{
     }
 };
 
+exports.getUserContactActivationId = async (userId, usersContactId) => {
+    try {
+        const rows = await knex('users_contacts')
+        .where({
+            id: usersContactId, 
+            verified: false,
+            user_id: userId
+        })
+        .select('verification_id', 'contact');
+
+        if(rows && rows.length > 0){
+            return rows[0];
+        } else {
+            return null;
+        }
+    } catch (error) {
+        console.log(error);
+        return null;
+    }
+}
+
 exports.findOneById = async (id)=>{
     try {
         const rows = await knex('users').where({'users.id': id}).select('*');

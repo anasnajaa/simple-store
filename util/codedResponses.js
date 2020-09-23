@@ -33,4 +33,5 @@ module.exports = {
     registration_success_check_email:           t => m(29, t('registration_success_check_email')),
     old_password_incorrect:                     t => m(30, t('old_password_incorrect')),
     auth_no_permission:                         t => m(31, t('you_dont_have_permission')),
+    invalid_activation_key:                     t => m(32, t('invalid_activation_key')),
 };

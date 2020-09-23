@@ -6,7 +6,7 @@ const {apiError} = require('../util/errorHandler');
 
 const userModel = require('../models/user.m');
 const bcrypt = require('bcrypt');
-const { vEmail, vEmpty, vPassword, vUserExist } = require('../validators');
+const { vEmail, vEmpty, vPassword, vUserExist, vNumeric } = require('../validators');
 const { isEmpty } = require('lodash');
 const { v4 } = require('uuid');
 const jwtAuth = require('../util/jwtAuth');
@@ -95,9 +95,39 @@ exports.activateAccount = async (req, res, next) => {
     }
 };
 
-exports.verifyMobile = async (req, res, next) => {
+exports.sendContactVerificationCode = async (req, res, next) => {
+    const t = req.__;
+    try {
+        const contactId = req.body.contactId;
+        const user = req.user;
 
+        let errors = {};
+        vNumeric(errors, contactId, "contactId");
+
+        if(!isEmpty(errors)){
+            res.json({status: -1, validationErrors: errors})
+            return;
+        }
+
+        const contactDetails = await userModel.getUserContactActivationId(user.id, contactId);
+
+        res.json({
+            status: 1,
+            contactDetails
+        })
+    } catch (error) {
+        apiError(res, error);
+    }
 };
+
+exports.verifiyContactCode = async (req, res, next) => {
+    const t = req.__;
+    try {
+        
+    } catch (error) {
+        apiError(res, error);
+    }
+}
 
 exports.login = async (req, res, next) => {
     const t = req.__;

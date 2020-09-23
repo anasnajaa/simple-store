@@ -14,6 +14,16 @@ exports.vEmpty = (errors, value, fieldName)=> {
     }
 };
 
+exports.vNumeric = (errors, value, fieldName)=> {
+    if(value !== undefined && value !== null) {
+        if(!validator.isNumeric(value.toString())){
+            errors[fieldName] = "Must be a number";
+        }
+    } else {
+        errors[fieldName] = "Must be a number";
+    }
+};
+
 exports.vPassword = (errors, password)=> {
     if(!validator.isAscii(password)) {
         errors["password"] = "Invalid characters used in the password";

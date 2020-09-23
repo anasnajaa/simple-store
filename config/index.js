@@ -2,7 +2,7 @@ module.exports = {
     development: {
         port: process.env.PORT || 3000,
         rootUrl: "http://localhost:"+process.env.PORT,
-        publicUrl: "https://a-simple-store.herokuapp.com:"+process.env.PORT,
+        publicUrl: "https://a-simple-store.herokuapp.com",
         saltingRounds: 10,
         corsOptions: {
             origin: ["http://localhost:8080"],
@@ -28,8 +28,8 @@ module.exports = {
     },
     production: {
         port: process.env.PORT || 80,
-        rootUrl: "https://a-simple-store.herokuapp.com:"+process.env.PORT,
-        publicUrl: "https://a-simple-store.herokuapp.com:"+process.env.PORT,
+        rootUrl: "https://a-simple-store.herokuapp.com",
+        publicUrl: "https://a-simple-store.herokuapp.com",
         saltingRounds: 10,
         corsOptions: {
             origin: ['*'],

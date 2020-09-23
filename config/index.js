@@ -1,12 +1,11 @@
 module.exports = {
     development: {
         port: process.env.PORT || 3000,
+        rootUrl: "http://localhost:"+process.env.PORT,
+        publicUrl: "https://a-simple-store.herokuapp.com:"+process.env.PORT,
         saltingRounds: 10,
         corsOptions: {
-            origin: [
-                "http://localhost:8080",
-                "http://localhost:3000"
-            ],
+            origin: ["http://localhost:8080"],
             credentials: true
         },
         jwtSecure: false,
@@ -20,15 +19,19 @@ module.exports = {
             password: process.env.EMAIL_PASS,
             host: process.env.EMAIL_HOST,
             port: process.env.EMAIL_PORT
+        },
+        sms: {
+            accountSid: process.env.TWILIO_ACC_SID,
+            authToken: process.env.TWILIO_AUTH
         }
     },
     production: {
         port: process.env.PORT || 80,
+        rootUrl: "https://a-simple-store.herokuapp.com:"+process.env.PORT,
+        publicUrl: "https://a-simple-store.herokuapp.com:"+process.env.PORT,
         saltingRounds: 10,
         corsOptions: {
-            origin: [
-                '*'
-            ],
+            origin: ['*'],
             credentials: true
         },
         jwtSecure: true,
@@ -42,6 +45,10 @@ module.exports = {
             password: process.env.EMAIL_PASS,
             host: process.env.EMAIL_HOST,
             port: process.env.EMAIL_PORT
+        },
+        sms: {
+            accountSid: process.env.TWILIO_ACC_SID,
+            authToken: process.env.TWILIO_AUTH
         }
     }
 }

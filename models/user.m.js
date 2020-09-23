@@ -1,48 +1,74 @@
 const knex = require('knex')(require('../config/db-connect'));
 
-exports.addNewCustomer = (userObject, cb)=>{
-    let dbUser = {};
+exports.addNewCustomer = (userObject, mobile)=>{
+    return new Promise((resolve, reject)=>{
+        let dbUser = {}, 
+        dbUserContact = {},
+        dbUserRoles = [];
 
-    const createUser = (trx) => {
-        return knex('users')
-        .transacting(trx)
-        .insert(userObject)
-        .returning('*');
-    };
+        const createUser = (trx) => {
+            return knex('users')
+            .transacting(trx)
+            .insert(userObject)
+            .returning('*');
+        };
+    
+        const addCustomerRole = (trx, user) => {
+            return knex('users_roles')
+            .transacting(trx)
+            .insert({'user_id': user.id, 'role_id': 2})
+            .returning('*');
+        };
 
-    const addCustomerRole = (trx, user) => {
-        return knex('users_roles')
-        .transacting(trx)
-        .insert({'user_id': user.id, 'role_id': 2})
-        .returning('*');
-    };
-
-    const logEntry = (trx, user) => {
-        return knex('logs')
+        const addCustomerContact = (trx, user) => {
+            return knex('users_contacts')
             .transacting(trx)
             .insert({
-                entry: "New customer created: " + user.id,
-            });
-    };
+                'user_id': user.id, 
+                'contact_type_id': 2,
+                'contact': mobile,
+                'verified': false,
+                'verification_id': Math.floor(Math.random()*90000) + 10000
+            })
+            .returning('*');
+        };
+    
+        const logEntry = (trx, user) => {
+            return knex('logs')
+                .transacting(trx)
+                .insert({
+                    entry: "New customer created: " + user.id,
+                });
+        };
 
-    knex.transaction((trx) => {
-        createUser(trx)
-            .then((rows) => {
-                dbUser = rows[0];
-                return addCustomerRole(trx, dbUser);
+        knex.transaction((trx) => {
+            createUser(trx)
+                .then((rows) => {
+                    dbUser = rows[0];
+                    return addCustomerRole(trx, dbUser);
+                })
+                .then((rows)=> {
+                    dbUserRoles = rows;
+                    return addCustomerContact(trx, dbUser);
+                })
+                .then((rows)=> {
+                    dbUserContact = rows[0];
+                    return logEntry(trx, dbUser);
+                })
+                .then(trx.commit)
+                .catch(trx.rollback);
             })
-            .then(()=> {
-                return logEntry(trx, dbUser);
+            .then((inserts) => {
+                resolve({
+                    user: dbUser, 
+                    contacts: dbUserContact,
+                    roles: dbUserRoles
+                });
             })
-            .then(trx.commit)
-            .catch(trx.rollback);
-        })
-        .then((inserts) => {
-            cb(null, dbUser);
-        })
-        .catch(function (error) {
-            cb(error, null);
-        });
+            .catch((error) => {
+                reject(error);
+            });
+    });
 };
 
 exports.findUserRoles = async (userId) => {
@@ -71,6 +97,29 @@ exports.findOneByEmail = async (email)=>{
         if(rows && rows.length > 0){
             const user = rows[0];
             user.roles = await this.findUserRoles(user.id);
+            return user;
+        } else {
+            return null;
+        }
+    } catch (error) {
+        console.log(error);
+        return null;
+    }
+};
+
+exports.activateUser = async (key)=>{
+    try {
+        const rows = await 
+        knex('users')
+        .where({activation_id: key})
+        .update({
+            activation_id: null, 
+            date_updated: new Date(),
+            is_active: true
+        })
+        .returning('*');
+        if(rows && rows.length > 0){
+            const user = rows[0];
             return user;
         } else {
             return null;

@@ -7,8 +7,7 @@ const cookieParser = require('cookie-parser');
 const morgan = require('morgan');
 const mongoose = require('mongoose');
 const fileUpload = require('express-fileupload');
-
-const routes = require('./routes/index.r');
+const router = require('./routes/index.r');
 
 const environment = process.env.NODE_ENV;
 const stage = require('./config/index')[environment];
@@ -48,7 +47,7 @@ if (environment !== 'production') {
     app.use(morgan('dev'));
 }
 
-routes.init(app);
+app.use('/api', router);
 
 app.listen(stage.port || '80', () => {
   console.log('Server started on: ' + stage.port);

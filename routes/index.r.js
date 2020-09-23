@@ -1,5 +1,10 @@
-const apiRouter = require('./api/index.r');
+const express = require('express');
+const router = express.Router();
 
-exports.init = (app)=>{
-    app.use('/api', apiRouter);
-}
+require('./brands.r').init(router);
+require('./categories.r').init(router);
+require('./account.r').init(router);
+require('./aws.r').init(router);
+require('./twilio.r').init(router);
+
+module.exports = router;

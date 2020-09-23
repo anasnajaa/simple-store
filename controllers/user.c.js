@@ -3,6 +3,7 @@ const environment = process.env.NODE_ENV;
 const stage = require('../config/index')[environment];
 const r = require('../util/codedResponses');
 const {apiError} = require('../util/errorHandler');
+const smsService = require('../util/sms');
 
 const userModel = require('../models/user.m');
 const bcrypt = require('bcrypt');
@@ -110,6 +111,10 @@ exports.sendContactVerificationCode = async (req, res, next) => {
         }
 
         const contactDetails = await userModel.getUserContactActivationId(user.id, contactId);
+
+        smsService.sendMessage(
+            "+965"+contactDetails.contact, 
+            "Please use this code to verify your contact: " + contactDetails.verification_id);
 
         res.json({
             status: 1,

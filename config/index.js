@@ -22,7 +22,8 @@ module.exports = {
         },
         sms: {
             accountSid: process.env.TWILIO_ACC_SID,
-            authToken: process.env.TWILIO_AUTH
+            authToken: process.env.TWILIO_AUTH,
+            fromNumber: process.env.TWILIO_FROM
         }
     },
     production: {
@@ -48,7 +49,8 @@ module.exports = {
         },
         sms: {
             accountSid: process.env.TWILIO_ACC_SID,
-            authToken: process.env.TWILIO_AUTH
+            authToken: process.env.TWILIO_AUTH,
+            fromNumber: process.env.TWILIO_FROM
         }
     }
 }

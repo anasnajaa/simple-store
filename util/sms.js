@@ -8,7 +8,7 @@ exports.sendMessage = async (to, body)=> {
     try {
         const response = await client.messages
         .create({
-            from: '+15017122661',
+            from: stage.sms.fromNumber,
             statusCallback: stage.publicUrl + '/api/update-sms-status',
             body,
             to

@@ -9,7 +9,7 @@ exports.vEmail = (errors, email)=> {
 };
 
 exports.vEmpty = (errors, value, fieldName)=> {
-    if(validator.isEmpty(value)) {
+    if(!value || validator.isEmpty(value)) {
         errors[fieldName] = "This field is required";
     }
 };

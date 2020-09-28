@@ -194,7 +194,7 @@ exports.login = async (req, res, next) => {
                 expires: stage.jwtCookieExpiry,
                 secure: stage.jwtSecure,
                 httpOnly: true,
-                sameSite: "None"
+                sameSite: 'none'
             }).json({
                 status: 1, 
                 token, 

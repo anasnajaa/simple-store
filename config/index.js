@@ -32,7 +32,7 @@ module.exports = {
         publicUrl: "https://a-simple-store.herokuapp.com",
         saltingRounds: 10,
         corsOptions: {
-            origin: ['*'],
+            origin: ['*', 'https://simple-store-admin.herokuapp.com/'],
             credentials: true
         },
         jwtSecure: true,

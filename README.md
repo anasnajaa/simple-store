@@ -1,21 +1,24 @@
 # Simple-Store API and Admin panel
-This is one of the three repositories that belong to the simple-store project.
-This repository represents the backend/API side of the project.
+This is one of the four repositories that belong to the simple-store project.
+This repository represents the API side of the project.
 The other two are:
- which represents the frontend project.
- which represents the (Android/iPhone) application project.
+- https://github.com/hecked12/simple-store-admin which represents the admin frontend project (Vue.js).
+- https://github.com/hecked12/simple-store-front which represents the customer frontend project (React.js).
+- https://github.com/hecked12/SimpleStoreApp which represents the (Android/iPhone) customer application project (React-Native).
 
 ## What is the purpose of Simple-Store?
 Simple-Store is a real life project of an e-commerce store used to demonstrate the usage of multiple technologies in a single project.
 Real life projects get big and require writing clean and maintainable code.
 In addition, they need to be flexible, extensible and scalable.
 
+## API documentation
+https://documenter.getpostman.com/view/634685/TVKHVbWx
+
 ## Technologies/concepts used and demonstrated in this repository
 - Version control to maintain a single source of truth, log/track changes and collaborate between team members
 - Change publishing workflow with GitHub and Heroku
-- Server authentication with sessions (used for admins)
 - API authentication with JWT (used for customers)
-- Roles support in both JWT and Server authentications
+- Roles support in JWT authentications
 - API endpoint for the main website and the Apps
 - SQL database with Postgress SQL to store relational data
 - NoSQL database with MongoDB to store session data and other non-relational data
@@ -25,6 +28,7 @@ In addition, they need to be flexible, extensible and scalable.
 - Environment variables to store secrets
 - Validation of all submitted data
 - Sending emails for account verification, purchases and others
+- Sending SMS for contact verification
 - Usage of frontend UI libraries to build an admin panel with good user experience
 - Usage of async/await instead of callbacks to reduce nesting and improve code tracing and readability
 - Advanced SQL queries to perform required data retention

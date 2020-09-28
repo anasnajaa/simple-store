@@ -13,7 +13,7 @@ module.exports = {
             secure: false,
             httpOnly: true,
         },
-        jwtSecure: true,
+        jwtSecure: false,
         jwtCookieExpiry: new Date(Date.now() + 604800000),
         jwtOption: { expiresIn: '1d', issuer: process.env.ISSUER },
         jwtSecret: process.env.JWT_SECRET,

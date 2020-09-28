@@ -214,13 +214,12 @@ exports.login = async (req, res, next) => {
 exports.logout = (req, res, next) => {
     const tr = req.__;
     try {
-        res.cookie('token', '', {
-            expires: new Date(Date.now()),
-            secure: stage.jwtSecure,
-            httpOnly: true,
-            maxAge: 0,
-            overwrite: true
-          }).json({status: 1});
+        const options = stage.jwtCookieOptions;
+        options.expires = new Date(Date.now());
+        options.maxAge = 0;
+        options.overwrite = tue;
+
+        res.cookie('token', '', options).json({status: 1});
     } catch (error) {
         apiError(res, error);
     }

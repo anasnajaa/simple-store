@@ -8,7 +8,12 @@ module.exports = {
             origin: ["http://localhost:8080"],
             credentials: true
         },
-        jwtSecure: false,
+        jwtCookieOptions: {
+            expires: new Date(Date.now() + 604800000),
+            secure: false,
+            httpOnly: true,
+        },
+        jwtSecure: true,
         jwtCookieExpiry: new Date(Date.now() + 604800000),
         jwtOption: { expiresIn: '1d', issuer: process.env.ISSUER },
         jwtSecret: process.env.JWT_SECRET,
@@ -34,6 +39,12 @@ module.exports = {
         corsOptions: {
             origin: ['https://simple-store-admin.herokuapp.com'],
             credentials: true
+        },
+        jwtCookieOptions: {
+            expires: new Date(Date.now() + 604800000),
+            secure: true,
+            httpOnly: true,
+            sameSite: 'None'
         },
         jwtSecure: true,
         jwtCookieExpiry: new Date(Date.now() + 604800000),

@@ -190,12 +190,8 @@ exports.login = async (req, res, next) => {
         const token = jwtAuth.generateToken(user);
         
         if (token) {
-            res.cookie('token', token, {
-                expires: stage.jwtCookieExpiry,
-                secure: stage.jwtSecure,
-                httpOnly: true,
-                sameSite: 'None'
-            }).json({
+            res.cookie('token', token, stage.jwtCookieOptions)
+            .json({
                 status: 1, 
                 token, 
                 user: {

@@ -206,7 +206,6 @@ exports.login = async (req, res, next) => {
             res.json({status: -1, error: r.failed_to_login_contact_support(t)});
         }
     } catch (error) {
-        console.log(error);
         apiError(res, error);
     }
 }

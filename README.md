@@ -13,9 +13,8 @@ In addition, they need to be flexible, extensible and scalable.
 ## Technologies/concepts used and demonstrated in this repository
 - Version control to maintain a single source of truth, log/track changes and collaborate between team members
 - Change publishing workflow with GitHub and Heroku
-- Server authentication with sessions (used for admins)
 - API authentication with JWT (used for customers)
-- Roles support in both JWT and Server authentications
+- Roles support in JWT authentications
 - API endpoint for the main website and the Apps
 - SQL database with Postgress SQL to store relational data
 - NoSQL database with MongoDB to store session data and other non-relational data
@@ -25,6 +24,7 @@ In addition, they need to be flexible, extensible and scalable.
 - Environment variables to store secrets
 - Validation of all submitted data
 - Sending emails for account verification, purchases and others
+- Sending SMS for contact verification
 - Usage of frontend UI libraries to build an admin panel with good user experience
 - Usage of async/await instead of callbacks to reduce nesting and improve code tracing and readability
 - Advanced SQL queries to perform required data retention

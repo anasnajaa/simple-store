@@ -217,7 +217,7 @@ exports.logout = (req, res, next) => {
         const options = stage.jwtCookieOptions;
         options.expires = new Date(Date.now());
         options.maxAge = 0;
-        options.overwrite = tue;
+        options.overwrite = true;
 
         res.cookie('token', '', options).json({status: 1});
     } catch (error) {

@@ -3,7 +3,7 @@ const user = require('../controllers/user.c');
 
 exports.init = (router)=>{
     router.post('/account/login', user.login);
-    router.post('/account/logout', user.logout);
+    router.post('/account/logout', isLoggedIn, user.logout);
     router.get('/account/profile', isLoggedIn, user.profile);
     router.post('/account/register', user.register);
     router.get('/account/activate', user.activateAccount);

@@ -106,29 +106,56 @@ exports.sendContactVerificationCode = async (req, res, next) => {
         vNumeric(errors, contactId, "contactId");
 
         if(!isEmpty(errors)){
-            res.json({status: -1, validationErrors: errors})
+            res.json({status: -1, validationErrors: errors});
             return;
         }
 
-        const contactDetails = await userModel.getUserContactActivationId(user.id, contactId);
+        const contactDetails = await userModel.getUserContactActivationDetails(user.id, contactId);
 
-        smsService.sendMessage(
-            "+965"+contactDetails.contact, 
-            "Please use this code to verify your contact: " + contactDetails.verification_id);
+        if(contactDetails.verifications_count > 2 ) {
+            res.json({status: -1, message: r.contact_verification_count_exceeded(t)});
+            return;
+        }
+
+        const messageResponse = await smsService.sendMessage(
+            contactDetails.contact, 
+            `${t("your_verification_code")}: ${contactDetails.verification_id}`);
+
+        const updatedContactDetails = await userModel.updateVerificationCount(contactId, contactDetails.verifications_count + 1);
 
         res.json({
             status: 1,
-            contactDetails
-        })
+            updatedContactDetails
+        });
+
     } catch (error) {
         apiError(res, error);
     }
 };
 
-exports.verifiyContactCode = async (req, res, next) => {
+exports.verifiyContact = async (req, res, next) => {
     const t = req.__;
     try {
-        
+        const {contactId, verificationId} = req.body;
+
+        const user = req.user;
+
+        let errors = {};
+        vNumeric(errors, contactId, "contactId");
+        vEmpty(errors, verificationId, "verificationId");
+
+        if(!isEmpty(errors)){
+            res.json({status: -1, validationErrors: errors})
+            return;
+        }
+
+        const verifiedContactDetails = await userModel
+        .verifyUserContact(user.id, contactId, verificationId);
+
+        if(verifiedContactDetails === null){
+            res.json({status: -1, message: r.contact_verification_failed(t)})
+        }
+
     } catch (error) {
         apiError(res, error);
     }

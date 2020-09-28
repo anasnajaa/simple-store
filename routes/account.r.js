@@ -9,7 +9,7 @@ exports.init = (router)=>{
     router.get('/account/activate', user.activateAccount);
 
     router.post('/account/sendContactVerificationCode', isLoggedIn, user.sendContactVerificationCode);
-    router.post('/account/verifiyContactCode', isLoggedIn, user.verifiyContactCode);
+    router.post('/account/verifiyContact', isLoggedIn, user.verifiyContact);
     
     return router;
 };

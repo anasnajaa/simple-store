@@ -130,15 +130,14 @@ exports.activateUser = async (key)=>{
     }
 };
 
-exports.getUserContactActivationId = async (userId, usersContactId) => {
+exports.getUserContactActivationDetails = async (userId, usersContactId) => {
     try {
         const rows = await knex('users_contacts')
         .where({
-            id: usersContactId, 
-            verified: false,
+            id: usersContactId,
             user_id: userId
         })
-        .select('verification_id', 'contact');
+        .select('*');
 
         if(rows && rows.length > 0){
             return rows[0];
@@ -149,7 +148,50 @@ exports.getUserContactActivationId = async (userId, usersContactId) => {
         console.log(error);
         return null;
     }
-}
+};
+
+exports.updateVerificationCount = async (usersContactId, count) => {
+    try {
+        const rows = await knex('users_contacts')
+        .where({
+            id: usersContactId
+        })
+        .update({verifications_count: count})
+        .returning('*');
+
+        if(rows && rows.length > 0){
+            return rows;
+        } else {
+            return null;
+        }
+    } catch (error) {
+        console.log(error);
+        return null;
+    }
+};
+
+exports.verifyUserContact = async (userId, usersContactId, verificationId) => {
+    try {
+        const rows = await knex('users_contacts')
+        .where({
+            id: usersContactId,
+            user_id: userId,
+            verified: false,
+            verification_id: verificationId
+        })
+        .update({verified: true, verification_id: null, verified_on: new Date()})
+        .select('*');
+
+        if(rows && rows.length > 0){
+            return rows[0];
+        } else {
+            return null;
+        }
+    } catch (error) {
+        console.log(error);
+        return null;
+    }
+};
 
 exports.findOneById = async (id)=>{
     try {

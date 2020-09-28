@@ -34,4 +34,7 @@ module.exports = {
     old_password_incorrect:                     t => m(30, t('old_password_incorrect')),
     auth_no_permission:                         t => m(31, t('you_dont_have_permission')),
     invalid_activation_key:                     t => m(32, t('invalid_activation_key')),
+    your_verification_code:                     t => m(33, t('your_verification_code')),
+    contact_verification_count_exceeded:        t => m(34, t('contact_verification_count_exceeded')),
+    contact_verification_failed:                t => m(35, t('contact_verification_failed')),
 };

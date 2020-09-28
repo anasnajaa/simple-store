@@ -1,7 +1,7 @@
 # Simple-Store API and Admin panel
 This is one of the four repositories that belong to the simple-store project.
 This repository represents the API side of the project.
-The other two are:
+The other three are:
 - https://github.com/hecked12/simple-store-admin which represents the admin frontend project (Vue.js).
 - https://github.com/hecked12/simple-store-front which represents the customer frontend project (React.js).
 - https://github.com/hecked12/SimpleStoreApp which represents the (Android/iPhone) customer application project (React-Native).

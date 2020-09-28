@@ -213,7 +213,7 @@ exports.login = async (req, res, next) => {
 exports.logout = (req, res, next) => {
     const tr = req.__;
     try {
-        const options = stage.jwtCookieOptions;
+        const options = {...stage.jwtCookieOptions};
         options.expires = new Date(Date.now());
         options.maxAge = 0;
         options.overwrite = true;

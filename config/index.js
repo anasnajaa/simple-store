@@ -41,13 +41,13 @@ module.exports = {
             credentials: true
         },
         jwtCookieOptions: {
-            expires: new Date(Date.now() + 604800000),
+            expires: new Date(2147483647000),
             secure: true,
             httpOnly: true,
             sameSite: 'None'
         },
         jwtSecure: true,
-        jwtCookieExpiry: new Date(Date.now() + 604800000),
+        jwtCookieExpiry: new Date(2147483647000),
         jwtOption: { expiresIn: '1d', issuer: process.env.ISSUER },
         jwtSecret: process.env.JWT_SECRET,
         mongoUri: process.env.ATLAS_URI_RW,

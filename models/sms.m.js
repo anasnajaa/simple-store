@@ -5,9 +5,10 @@ const schema = new Schema({
     account_sid: { type: String, required: false },
     api_version: { type: String, required: false },
     body: { type: String, required: false },
-    date_created: { type: String, required: false },
+    date_created: { type: Date, required: false },
     date_sent: { type: String, required: false },
-    date_updated: { type: String, required: false },
+    date_updated: { type: Date, required: false },
+    type: { type: String, required: false },
     direction: { type: String, required: false },
     error_code: { type: String, required: false },
     error_message: { type: String, required: false },
@@ -23,8 +24,7 @@ const schema = new Schema({
     SmsStatus: { type: String, required: false },
     MessageStatus: { type: String, required: false }
 }, 
-{ timestamps: false}, 
-{ _id: false });
+{ timestamps: false});
 
 const SMS = mongoose.model('SMS', schema);
 

@@ -220,7 +220,7 @@ exports.verifyUserContact = async (userId, usersContactId, verificationId) => {
             is_deleted: false
         })
         .update({verified: true, verification_id: null, verified_on: new Date()})
-        .select('*');
+        .returning('*');
 
         if(rows && rows.length > 0){
             return rows[0];

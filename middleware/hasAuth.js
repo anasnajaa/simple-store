@@ -1,6 +1,6 @@
 const environment = process.env.NODE_ENV;
 const stage = require('../config/index')[environment];
-const r = require('../util/codedResponses');
+const r = require('../locales/codedResponses');
 const jwt = require('jsonwebtoken');
 const tokenModel = require('../models/token.m');
 const {clientIp} = require('../util/express');

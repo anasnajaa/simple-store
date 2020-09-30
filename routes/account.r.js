@@ -2,7 +2,9 @@ const { isLoggedIn, isLoggedOut } = require('../middleware/hasAuth');
 const user = require('../controllers/user.c');
 
 exports.init = (router)=>{
-    router.post('/account/login', user.login);
+    router.post('/account/login/admin', user.loginAdmin);
+    router.post('/account/login/customer', user.loginCustomer);
+
     router.post('/account/logout', user.logout);
     router.get('/account/profile', isLoggedIn, user.profile);
     router.post('/account/register', user.register);

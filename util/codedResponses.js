@@ -38,4 +38,5 @@ module.exports = {
     contact_verification_count_exceeded:        t => m(34, t('contact_verification_count_exceeded')),
     contact_verification_failed:                t => m(35, t('contact_verification_failed')),
     verification_code_sent:                     t => m(36, t('verification_code_sent')),
+    you_must_be_logged_out:                     t => m(37, t('you_must_be_logged_out')),
 };

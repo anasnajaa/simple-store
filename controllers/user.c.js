@@ -125,7 +125,7 @@ exports.sendContactVerificationCode = async (req, res, next) => {
 
         res.json({
             status: 1,
-            updatedContactDetails
+            message: r.verification_code_sent(t)
         });
 
     } catch (error) {

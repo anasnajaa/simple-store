@@ -37,4 +37,5 @@ module.exports = {
     your_verification_code:                     t => m(33, t('your_verification_code')),
     contact_verification_count_exceeded:        t => m(34, t('contact_verification_count_exceeded')),
     contact_verification_failed:                t => m(35, t('contact_verification_failed')),
+    verification_code_sent:                     t => m(36, t('verification_code_sent')),
 };

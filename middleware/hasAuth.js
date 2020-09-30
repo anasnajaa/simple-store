@@ -1,38 +1,61 @@
-const createError = require('http-errors');
 const environment = process.env.NODE_ENV;
 const stage = require('../config/index')[environment];
 const r = require('../util/codedResponses');
 const jwt = require('jsonwebtoken');
+const tokenModel = require('../models/token.m');
+const {clientIp} = require('../util/express');
 
-const retriveJwtToken = (req)=> {
-    return new Promise((resolve, reject) => {
+const removeTokenCookie = async (response) => {
+    const options = {...stage.jwtCookieOptions};
+    options.expires = new Date(Date.now());
+    options.maxAge = 0;
+    options.overwrite = true;
+    response.cookie('token', '', options);
+}
+
+const retriveJwtToken = (req, res)=> {
+    return new Promise(async (resolve, reject) => {
         const t = req.__;
         try {
             const jwtToken = req.cookies.token || null;
-
-            const user = jwt.verify(jwtToken, stage.jwtSecret, stage.jwtOption);
-            console.log("JWT verefied");
-            resolve(user);
-        } catch (err) {
-            console.log("JWT verification failed", err.message)
-            if (err.message === "jwt expired") {
-                error = r.auth_expired(t);
+            jwt.verify(jwtToken, stage.jwtSecret, stage.jwtOption);
+            const token = await tokenModel.findOne({token: jwtToken, isExpired: false}).exec();
+            if(token){
+                token.lastActive = new Date();
+                token.lastIp = clientIp(req);
+                token.lastUserAgent = req.useragent;
+                await token.save();
+                resolve(token.user);
             } else {
-                error = r.auth_error(t);
+                removeTokenCookie(res);
+                reject(new Error("Token Expired"));
             }
-            reject(error);
+        } catch (err) {
+            reject(err);
         }
     });
+}
+
+exports.isLoggedOut = async (req, res, next) => {
+    const t = req.__;
+    const jwtToken = req.cookies.token || null;
+    if(jwtToken){
+        res.status(401).send({
+            status: 401,
+            error: r.you_must_be_logged_out(t)
+        }); 
+    } else {
+        next();
+    }
 }
 
 exports.isLoggedIn = async (req, res, next) => {
     const t = req.__;
     try {
-        const user = await retriveJwtToken(req);
+        const user = await retriveJwtToken(req, res);
         req.user = user;
         next();
     } catch(error) {
-        console.log("Access denied for route", req.url);
         res.status(401).send({
             status: 401,
             error: r.auth_no_token(t)
@@ -43,7 +66,7 @@ exports.isLoggedIn = async (req, res, next) => {
 exports.isAdmin = async (req, res, next) => {
     const t = req.__;
     try {
-        const user = await retriveJwtToken(req);
+        const user = await retriveJwtToken(req, res);
         for(let i in user.roles){
             if(user.roles[i].id === 1){
                 req.user = user;
@@ -56,7 +79,6 @@ exports.isAdmin = async (req, res, next) => {
             error: r.auth_no_permission(t)
         });
     } catch(error) {
-        console.log("Access denied for route", req.url);
         res.status(401).send({
             status: 401,
             error: r.auth_no_token(t)

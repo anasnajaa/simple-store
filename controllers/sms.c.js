@@ -27,12 +27,11 @@ exports.sendMessage =  (type, to, body)=> {
              });
 
              message.date_sent = new Date();
-             message = merge(message, response);
+             merge(message, response);
              await message.save();
 
              resolve({serviceResponse: response, addedRecord: message});
         } catch (error) {
-            apiError(error);
             reject(error);
         }
     });

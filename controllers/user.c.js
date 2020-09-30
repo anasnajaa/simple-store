@@ -10,7 +10,7 @@ const bcrypt = require('bcrypt');
 const { vEmail, vEmpty, vPassword, vUserExist, vNumeric } = require('../validators');
 const { isEmpty } = require('lodash');
 const { v4 } = require('uuid');
-const jwtAuth = require('../util/jwtAuth');
+const {generateApiToken, expireApiToken} = require('../util/jwtAuth');
 const accountActivationEmail = require('../email/accountActivation');
 const welcomeEmail = require('../email/welcomeEmail');
 
@@ -118,6 +118,7 @@ exports.sendContactVerificationCode = async (req, res, next) => {
         }
 
         const messageResponse = await smsService.sendMessage(
+            "verification",
             contactDetails.contact, 
             `${t("your_verification_code")}: ${contactDetails.verification_id}`);
 
@@ -170,7 +171,7 @@ exports.login = async (req, res, next) => {
         vEmail(errors, username);
         vEmpty(errors, password, "password");
 
-        const user = await userModel.findOneByEmail(username);
+        const user = await userModel.getUserDetailsForToken({email: username});
         
         if(user === null){
             res.json({status: -1, message: r.account_doesnt_exist_active(t)});
@@ -187,8 +188,8 @@ exports.login = async (req, res, next) => {
             return;
         }
         
-        const token = jwtAuth.generateToken(user);
-        
+        const token = await generateApiToken(req, user);
+
         if (token) {
             res.cookie('token', token, stage.jwtCookieOptions)
             .json({
@@ -210,13 +211,15 @@ exports.login = async (req, res, next) => {
     }
 }
 
-exports.logout = (req, res, next) => {
+exports.logout = async (req, res, next) => {
     const tr = req.__;
     try {
         const options = {...stage.jwtCookieOptions};
         options.expires = new Date(Date.now());
         options.maxAge = 0;
         options.overwrite = true;
+
+        await expireApiToken(req);
 
         res.cookie('token', '', options).json({status: 1});
     } catch (error) {
@@ -228,6 +231,12 @@ exports.profile = async (req, res, next) => {
     try {
         const jwtUser = req.user;
         const user = await userModel.findOneByEmail(jwtUser.email);
+
+        if(!user.is_active){
+            res.json({status: -1, message: r.this_account_is_disabled(r)});
+            return;
+        }
+
         const contacts = await userModel.userContacts(user.id);
         user.contacts = contacts;
 
@@ -235,6 +244,8 @@ exports.profile = async (req, res, next) => {
         delete user.date_updated;
         delete user.activation_id;
         delete user.password;
+        delete user.password_reset_data;
+        delete user.is_active;
 
         res.json({
             status: 1,

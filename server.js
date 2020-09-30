@@ -2,53 +2,48 @@ require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const i18n = require('i18n');
-const path = require('path');
 const cookieParser = require('cookie-parser');
-const morgan = require('morgan');
 const mongoose = require('mongoose');
 const fileUpload = require('express-fileupload');
 const router = require('./routes/index.r');
+const useragent = require('express-useragent');
+const logger = require('./util/logger');
+const helmet = require('helmet');
+const localsConfig = require('./locales/config');
+const rateLimiter = require('./middleware/rateLimiter');
 
 const environment = process.env.NODE_ENV;
 const stage = require('./config/index')[environment];
 
 // mongo db
-mongoose.connect(stage.mongoUri, { 
-  useNewUrlParser: true, 
-  useCreateIndex: true, 
+mongoose.connect(stage.mongoUri, {
+  useNewUrlParser: true,
+  useCreateIndex: true,
   useUnifiedTopology: true
 });
 const connection = mongoose.connection;
-connection.once('open', () => console.log("MongoDB connection established"));
+connection.once('open', () => {
+  // server config
+  const app = express();
 
-// server config
-const app = express();
+  app.use(helmet());
+  app.use(cors(stage.corsOptions));
+  app.use(require('express-status-monitor')());
+  app.use(useragent.express());
+  app.use(express.json());
+  app.use(express.urlencoded({extended: true}));
+  app.use(cookieParser());
+  app.use(fileUpload());
 
-i18n.configure({
-  locales: ['en', 'ar'],
-  cookie: 'lang',
-  queryParameter: 'lang',
-  directory: './locales'
-});
+  i18n.configure(localsConfig);
+  app.use(i18n.init);
 
-app.disable('x-powered-by'); 
+  logger.init(stage.mongoUri, app);
 
-app.use(cors(stage.corsOptions));
-app.use(require('express-status-monitor')());
+  rateLimiter.init(connection);
+  app.use(rateLimiter.rateLimiterMiddleware);
 
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
-app.use(cookieParser());
-app.use(i18n.init);
-app.use(express.static(path.join(__dirname, 'public')));
-app.use(fileUpload());
+  app.use('/api', router);
 
-if (environment !== 'production') {
-    app.use(morgan('dev'));
-}
-
-app.use('/api', router);
-
-app.listen(stage.port || '80', () => {
-  console.log('Server started on: ' + stage.port);
+  app.listen(stage.port, () => console.log("Server Started"));
 });

@@ -1,3 +1,5 @@
+const { request } = require("express");
+
 exports.getFilterQuery = (query)=>{
     let { page, orderby, ordertype, recordsperpage, filtertext, filterby } = query;
     page = parseInt(page) || 1;
@@ -49,4 +51,8 @@ exports.buildPaginationQuery = (query, page)=>{
         }
     }
     return rQuery;
+}
+
+exports.clientIp = (request) => {
+    return request.headers['x-forwarded-for'] || request.connection.remoteAddress;
 }

@@ -1,21 +1,30 @@
-const getFormattedDate = () => {
-    const date = new Date();
+require('dotenv').config();
+const consoleLogger = require('morgan');
+const databaseLogger = require('mongoose-morgan');
+const {getDecryptedToken} = require('../util/jwtAuth');
 
-    let month = date.getMonth() + 1;
-    let day = date.getDate();
-    let hour = date.getHours();
-    let min = date.getMinutes();
-    let sec = date.getSeconds();
+const environment = process.env.NODE_ENV;
 
-    month = (month < 10 ? "0" : "") + month;
-    day = (day < 10 ? "0" : "") + day;
-    hour = (hour < 10 ? "0" : "") + hour;
-    min = (min < 10 ? "0" : "") + min;
-    sec = (sec < 10 ? "0" : "") + sec;
-
-    return date.getFullYear() + "-" + month + "-" + day + "_" +  hour + ":" + min + ":" + sec;
+const getTokenValue = (req) => {
+    const token = getDecryptedToken(req);
+    return token ? token.user : null;
 };
 
-exports.log = (tag, ...messages) => {
-    console.log(`[${getFormattedDate()}]`, `[${tag}]`, messages);
+const getUserAgentDetails = (req) => {
+    const detailsObject = req.useragent;
+    return token ? token.user : null;
+};
+
+consoleLogger.token('token',  (req) => getTokenValue(req));
+databaseLogger.token('token', (req) => getTokenValue(req));
+
+const productionLogFormat = ":remote-addr,:remote-user,:method,:url,:status,:response-time,:token";
+const developmentLogFormat = ":method\t:status\t:response-time\tID :token\t:url";
+
+exports.init = (mongouri, app) => {
+    if (environment !== 'production') {
+        app.use(consoleLogger(developmentLogFormat));
+    } else {
+        app.use(databaseLogger({connectionString: mongouri}, {}, productionLogFormat));
+    }
 }

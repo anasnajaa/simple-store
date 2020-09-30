@@ -1,4 +1,5 @@
 const knex = require('knex')(require('../config/db-connect'));
+const {databaseError} = require('../util/errorHandler');
 
 exports.addNewCustomer = (userObject, mobile)=>{
     return new Promise((resolve, reject)=>{
@@ -66,6 +67,7 @@ exports.addNewCustomer = (userObject, mobile)=>{
                 });
             })
             .catch((error) => {
+                databaseError(error);
                 reject(error);
             });
     });
@@ -86,7 +88,7 @@ exports.findUserRoles = async (userId) => {
         }
 
     } catch (error) {
-        console.log(error);
+        databaseError(error);
         return [];
     }
 };
@@ -102,10 +104,30 @@ exports.findOneByEmail = async (email)=>{
             return null;
         }
     } catch (error) {
-        console.log(error);
+        databaseError(error);
         return null;
     }
 };
+
+exports.userContacts = async (userId) => {
+    try {
+        const rows = await knex('users_contacts')
+        .innerJoin('contact_types', 'contact_types.id', '=', 'users_contacts.contact_type_id')
+        .where({'users_contacts.user_id': userId})
+        .select('users_contacts.id AS  contact_id', 
+        'contact_types.name AS contact_type',
+        'users_contacts.contact',
+        'users_contacts.verified');
+        if(rows && rows.length > 0){
+            return rows;
+        } else {
+            return [];
+        }
+    } catch (error) {
+        databaseError(error);
+        return [];
+    }
+}
 
 exports.activateUser = async (key)=>{
     try {
@@ -125,7 +147,7 @@ exports.activateUser = async (key)=>{
             return null;
         }
     } catch (error) {
-        console.log(error);
+        databaseError(error);
         return null;
     }
 };
@@ -145,7 +167,7 @@ exports.getUserContactActivationDetails = async (userId, usersContactId) => {
             return null;
         }
     } catch (error) {
-        console.log(error);
+        databaseError(error);
         return null;
     }
 };
@@ -165,7 +187,7 @@ exports.updateVerificationCount = async (usersContactId, count) => {
             return null;
         }
     } catch (error) {
-        console.log(error);
+        databaseError(error);
         return null;
     }
 };
@@ -188,7 +210,7 @@ exports.verifyUserContact = async (userId, usersContactId, verificationId) => {
             return null;
         }
     } catch (error) {
-        console.log(error);
+        databaseError(error);
         return null;
     }
 };
@@ -204,7 +226,7 @@ exports.findOneById = async (id)=>{
             return null;
         }
     } catch (error) {
-        console.log(error);
+        databaseError(error);
         return null;
     }
 };
@@ -218,7 +240,7 @@ exports.createUser = async (userObject)=>{
             return null;
         }
     } catch (error) {
-        console.log(error);
+        databaseError(error);
         return null;
     }
 };
@@ -232,7 +254,7 @@ exports.addAdminRoleToUser = async (userId)=>{
             return null;
         }
     } catch (error) {
-        console.log(error);
+        databaseError(error);
         return null;
     }
 };
@@ -246,7 +268,7 @@ exports.addCustomerRoleToUser = async (userId)=>{
             return null;
         }
     } catch (error) {
-        console.log(error);
+        databaseError(error);
         return null;
     }
 };

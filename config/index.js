@@ -5,7 +5,7 @@ module.exports = {
         publicUrl: "https://a-simple-store.herokuapp.com",
         saltingRounds: 10,
         corsOptions: {
-            origin: ["http://localhost:8080"],
+            origin: "*",
             credentials: true
         },
         jwtCookieOptions: {

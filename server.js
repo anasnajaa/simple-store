@@ -26,7 +26,9 @@ connection.once('open', () => {
   // server config
   const app = express();
 
-  app.use(helmet());
+  app.use(helmet({
+    contentSecurityPolicy: false,
+  }));
   app.use(cors(stage.corsOptions));
   app.use(require('express-status-monitor')());
   app.use(useragent.express());

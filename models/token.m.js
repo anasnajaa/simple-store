@@ -5,7 +5,7 @@ const schema = new Schema({
     token: { type: String, required: false },
     user: { type: Object, required: false },
     lastActive: { type: Date, required: false },
-    lastIp: { type: Date, required: false },
+    lastIp: { type: String, required: false },
     lastUserAgent: { type: Object, required: false },
     isExpired: { type: Boolean, required: false },
 }, 

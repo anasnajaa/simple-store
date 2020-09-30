@@ -13,6 +13,20 @@ const removeTokenCookie = async (response) => {
     response.cookie('token', '', options);
 }
 
+const resolveError = (t, res, error) => {
+    if(error.message === "Expired"){
+        res.status(440).send({
+            status: 440,
+            error: r.auth_expired(t)
+        });
+    } else {
+        res.status(401).send({
+            status: 401,
+            error: r.auth_no_token(t)
+        });
+    }
+}
+
 const retriveJwtToken = (req, res)=> {
     return new Promise(async (resolve, reject) => {
         const t = req.__;
@@ -28,7 +42,7 @@ const retriveJwtToken = (req, res)=> {
                 resolve(token.user);
             } else {
                 removeTokenCookie(res);
-                reject(new Error("Token Expired"));
+                reject(new Error("Expired"));
             }
         } catch (err) {
             reject(err);
@@ -56,10 +70,7 @@ exports.isLoggedIn = async (req, res, next) => {
         req.user = user;
         next();
     } catch(error) {
-        res.status(401).send({
-            status: 401,
-            error: r.auth_no_token(t)
-        });
+        resolveError(t, res, error);
     }
 }
 
@@ -79,9 +90,6 @@ exports.isAdmin = async (req, res, next) => {
             error: r.auth_no_permission(t)
         });
     } catch(error) {
-        res.status(401).send({
-            status: 401,
-            error: r.auth_no_token(t)
-        });
+        resolveError(t, res, error);
     }
 }

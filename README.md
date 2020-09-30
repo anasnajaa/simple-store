@@ -1,7 +1,7 @@
 # Simple-Store API and Admin panel
 This is one of the four repositories that belong to the simple-store project.
 This repository represents the API side of the project.
-The other two are:
+The other three are:
 - https://github.com/hecked12/simple-store-admin which represents the admin frontend project (Vue.js).
 - https://github.com/hecked12/simple-store-front which represents the customer frontend project (React.js).
 - https://github.com/hecked12/SimpleStoreApp which represents the (Android/iPhone) customer application project (React-Native).
@@ -13,6 +13,11 @@ In addition, they need to be flexible, extensible and scalable.
 
 ## API documentation
 https://documenter.getpostman.com/view/634685/TVKHVbWx
+
+## Database Structure
+Two types of databases used in this project, relational (Postgress) and noSql (MongoDB).
+Postgress database diagram (incomplete):
+![Diagram](/resources/diagram.png)
 
 ## Technologies/concepts used and demonstrated in this repository
 - Version control to maintain a single source of truth, log/track changes and collaborate between team members
@@ -31,7 +36,7 @@ https://documenter.getpostman.com/view/634685/TVKHVbWx
 - Sending SMS for contact verification
 - Usage of frontend UI libraries to build an admin panel with good user experience
 - Usage of async/await instead of callbacks to reduce nesting and improve code tracing and readability
-- Advanced SQL queries to perform required data retention
+- Advanced SQL queries to perform required data retention using query builder (No ORMs used in this project)
 - Usage of SQL transactions to ensure data integrity
 - Usage of Foreign Keys, Primary keys, Indexes to ensure data integrity
 - Server load monitoring 

@@ -10,7 +10,7 @@ const parsePostgressUrl = ()=>{
     password: passwordAndDomain[0],
     database: portAndDatabase[1],
     port: portAndDatabase[0],
-    max: 10,
+    pool: { min: 5, max: 20 },
     idleTimeoutMillis: 30000,
     ssl: {
       rejectUnauthorized: false,

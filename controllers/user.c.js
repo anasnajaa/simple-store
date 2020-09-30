@@ -1,7 +1,7 @@
 require('dotenv').config();
 const environment = process.env.NODE_ENV;
 const stage = require('../config/index')[environment];
-const r = require('../util/codedResponses');
+const r = require('../locales/codedResponses');
 const {apiError} = require('../util/errorHandler');
 const smsService = require('./sms.c');
 
@@ -155,6 +155,8 @@ exports.verifiyContact = async (req, res, next) => {
 
         if(verifiedContactDetails === null){
             res.json({status: -1, message: r.contact_verification_failed(t)})
+        } else {
+            res.json({status: 1, message: r.contact_verified(t)})
         }
 
     } catch (error) {
@@ -162,7 +164,7 @@ exports.verifiyContact = async (req, res, next) => {
     }
 }
 
-exports.login = async (req, res, next) => {
+exports.loginAdmin = async (req, res, next) => {
     const t = req.__;
     try {
         const {username, password} = req.body;
@@ -170,24 +172,79 @@ exports.login = async (req, res, next) => {
 
         vEmail(errors, username);
         vEmpty(errors, password, "password");
-
         const user = await userModel.getUserDetailsForToken({email: username});
         
+        const admin = user.roles.filter(x => x.id === 1); // admin role
+
+        if(admin.length === 0){
+            res.json({status: -1, message: r.auth_no_permission(t)});
+            return;
+        }
+
         if(user === null){
             res.json({status: -1, message: r.account_doesnt_exist_active(t)});
             return;
         }
-
         if(!user.is_active){
             res.json({status: -1, message: r.you_must_verifiy_account_to_login(t)});
             return;
         }
-        
         if (!validPassword(user, password)) {
             res.json({status: -1, message: r.wrong_user_pass(t)});
             return;
         }
+        const token = await generateApiToken(req, user);
+
+        if (token) {
+            res.cookie('token', token, stage.jwtCookieOptions)
+            .json({
+                status: 1, 
+                token, 
+                user: {
+                    id: user.id,
+                    firstName: user.first_name,
+                    lastName: user.last_name,
+                    email: user.email,
+                    roles: user.roles
+                }
+            });
+        } else {
+            res.json({status: -1, error: r.failed_to_login_contact_support(t)});
+        }
+    } catch (error) {
+        apiError(res, error);
+    }
+}
+
+exports.loginCustomer = async (req, res, next) => {
+    const t = req.__;
+    try {
+        const {username, password} = req.body;
+        let errors = {};
+
+        vEmail(errors, username);
+        vEmpty(errors, password, "password");
+        const user = await userModel.getUserDetailsForToken({email: username});
         
+        const admin = user.roles.filter(x => x.id === 2); // customer role
+
+        if(admin.length === 0){
+            res.json({status: -1, message: r.auth_no_permission(t)});
+            return;
+        }
+
+        if(user === null){
+            res.json({status: -1, message: r.account_doesnt_exist_active(t)});
+            return;
+        }
+        if(!user.is_active){
+            res.json({status: -1, message: r.you_must_verifiy_account_to_login(t)});
+            return;
+        }
+        if (!validPassword(user, password)) {
+            res.json({status: -1, message: r.wrong_user_pass(t)});
+            return;
+        }
         const token = await generateApiToken(req, user);
 
         if (token) {

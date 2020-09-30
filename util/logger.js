@@ -18,7 +18,7 @@ const getUserAgentDetails = (req) => {
 consoleLogger.token('token',  (req) => getTokenValue(req));
 databaseLogger.token('token', (req) => getTokenValue(req));
 
-const productionLogFormat = ":remote-addr,:remote-user,:method,:url,:status,:response-time,:token";
+const productionLogFormat = ":remote-user,:method,:url,:status,:response-time,:token";
 const developmentLogFormat = ":method\t:status\t:response-time\tID :token\t:url";
 
 exports.init = (mongouri, app) => {

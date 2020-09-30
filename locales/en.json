@@ -43,5 +43,6 @@
 	"contact_verification_count_exceeded": "You've exceeded the verifications limit for this contact, please contact support to verifiy this contact.",
 	"contact_verification_failed": "Contact verification failed, please try again.",
 	"verification_code_sent": "Verification code sent, please use the code to activate your contact",
-	"you_must_be_logged_out": "You must be logged out to access this resource"
+	"you_must_be_logged_out": "You must be logged out to access this resource",
+	"contact_verified": "Contact verified, thank you."
 }

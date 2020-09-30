@@ -3,7 +3,7 @@ const environment = process.env.NODE_ENV;
 const stage = require('../config/index')[environment];
 const r = require('../util/codedResponses');
 const {apiError} = require('../util/errorHandler');
-const smsService = require('../util/sms');
+const smsService = require('./sms.c');
 
 const userModel = require('../models/user.m');
 const bcrypt = require('bcrypt');
@@ -228,6 +228,8 @@ exports.profile = async (req, res, next) => {
     try {
         const jwtUser = req.user;
         const user = await userModel.findOneByEmail(jwtUser.email);
+        const contacts = await userModel.userContacts(user.id);
+        user.contacts = contacts;
 
         delete user.date_created;
         delete user.date_updated;

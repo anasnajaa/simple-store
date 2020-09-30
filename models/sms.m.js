@@ -6,7 +6,7 @@ const schema = new Schema({
     api_version: { type: String, required: false },
     body: { type: String, required: false },
     date_created: { type: Date, required: false },
-    date_sent: { type: String, required: false },
+    date_sent: { type: Date, required: false },
     date_updated: { type: Date, required: false },
     type: { type: String, required: false },
     direction: { type: String, required: false },

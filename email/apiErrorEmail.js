@@ -1,4 +1,5 @@
 const mailer = require('../util/mailer');
+const accounts = require('./accounts');
 
 const template = (error)=>{
     try {
@@ -11,7 +12,7 @@ const template = (error)=>{
 exports.sendEmail = (error) => {
     mailer.sendMail({
         from: process.env.EMAIL_USER,
-        to: "spidernet12@gmail.com",
+        to: accounts.developers,
         subject: "Exception in API",
         html: template(error)
     }, "email sent").catch(console.error);

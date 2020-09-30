@@ -93,6 +93,22 @@ exports.findUserRoles = async (userId) => {
     }
 };
 
+exports.getUserDetailsForToken = async (condition)=>{
+    try {
+        const rows = await knex('users').where(condition).select('*');
+        if(rows && rows.length > 0){
+            const user = rows[0];
+            user.roles = await this.findUserRoles(user.id);
+            return user;
+        } else {
+            return null;
+        }
+    } catch (error) {
+        databaseError(error);
+        return null;
+    }
+};
+
 exports.findOneByEmail = async (email)=>{
     try {
         const rows = await knex('users').where({email}).select('*');
@@ -113,7 +129,7 @@ exports.userContacts = async (userId) => {
     try {
         const rows = await knex('users_contacts')
         .innerJoin('contact_types', 'contact_types.id', '=', 'users_contacts.contact_type_id')
-        .where({'users_contacts.user_id': userId})
+        .where({'users_contacts.user_id': userId, is_deleted: false})
         .select('users_contacts.id AS  contact_id', 
         'contact_types.name AS contact_type',
         'users_contacts.contact',
@@ -157,7 +173,8 @@ exports.getUserContactActivationDetails = async (userId, usersContactId) => {
         const rows = await knex('users_contacts')
         .where({
             id: usersContactId,
-            user_id: userId
+            user_id: userId,
+            is_deleted: false
         })
         .select('*');
 
@@ -199,7 +216,8 @@ exports.verifyUserContact = async (userId, usersContactId, verificationId) => {
             id: usersContactId,
             user_id: userId,
             verified: false,
-            verification_id: verificationId
+            verification_id: verificationId,
+            is_deleted: false
         })
         .update({verified: true, verification_id: null, verified_on: new Date()})
         .select('*');

@@ -3,26 +3,17 @@ const awsS3 = require('../util/awsS3');
 const queryHelper = require('../util/knexQueryHelper');
 const {merge} = require('lodash');
 
-const isEmpty = (val)=>{
-    return val === undefined || val === null || val === "";
-};
+exports.buildModel = (brands, mode)=>{
+    const uBrands = []; 
 
-const buildModel = (brands, mode)=>{
-    const hasItem = (list, item)=>{
-        for(let i in list){
-            if(list[i].id === item.id){ return true; }
-        }
-        return false;
-    };
-
-    const uBrands = [];
-
+    // extract unique brands from tabular data
     brands.forEach(b=>{
-        if(!hasItem(uBrands, b)){
+        if(!uBrands.find(x => x.id === b.id)){
             uBrands.push({...b});
         }
     });
 
+    // transform tabular data into JSON friendly format
     for(let i in uBrands){
         // remove redundant keys
         delete uBrands[i].category_id;
@@ -32,26 +23,17 @@ const buildModel = (brands, mode)=>{
         uBrands[i].categories = [];
         for(let k in brands){
             if(brands[k].id === uBrands[i].id && brands[k].category_id !== null){
-                const category = {
+                uBrands[i].categories.push({
                     id: brands[k].category_id,
                     brand_category_id: brands[k].brand_category_id,
                     name: brands[k].category_name,
                     thumbnail: brands[k].category_thumbnail
-                };
-
-                category.thumbExist = ()=> {
-                    return category.thumbnail !== null && category.thumbnail !== "";
-                };
-
-                if(category.thumbExist()){
-                    category.thumbnail_url = awsS3.fileUrl(category.thumbnail);
-                } 
-
-                uBrands[i].categories.push(category);
+                });
             }
         }
     }
 
+    // attach helper methods and computed data
     uBrands.forEach(brand=>{
         brand.thumbExist = ()=> {
             return brand.thumbnail !== null && brand.thumbnail !== "";
@@ -60,13 +42,23 @@ const buildModel = (brands, mode)=>{
         if(brand.thumbExist()){
             brand.thumbnail_url = awsS3.fileUrl(brand.thumbnail);
         } 
+
+        brand.categories.forEach(category=>{
+            category.thumbExist = ()=> {
+                return category.thumbnail !== null && category.thumbnail !== "";
+            };
+
+            if(category.thumbExist()){
+                category.thumbnail_url = awsS3.fileUrl(category.thumbnail);
+            } 
+        })
     });
 
     if(mode === "simple"){
         return uBrands;
     }
 
-    // attach advanced helper methods
+    // attach advanced helper methods (for crud operations)
     uBrands.forEach(brand=>{
         brand.deleteThumb = async ()=> {
             if(brand.thumbExist()){
@@ -107,73 +99,6 @@ const buildModel = (brands, mode)=>{
     return uBrands;
 }
 
-exports.getCountByQuery = async (query)=>{
-    try {
-        const filterby = isEmpty(query.filterby) ? "name" : query.filterby;
-        const filtertext = isEmpty(query.filtertext) ? "" : query.filtertext.toLowerCase();
-        const rows = await knex('brands')
-        .where(
-            knex.raw(`LOWER(${filterby}) LIKE ?`, `%${filtertext}%`)
-        )
-        .count('id');
-
-        if(rows && rows.length > 0){
-            return rows[0].count;
-        } else {
-            return 0;
-        }
-    } catch (error) {
-        console.log(error);
-        return 0;
-    }
-};
-
-// exports.findAllByQuery = async (query)=>{
-//     try {
-//         const filterby = isEmpty(query.filterby)? "name" : query.filterby;
-//         const filtertext = isEmpty(query.filtertext) ? "" : query.filtertext.toLowerCase();
-//         const brandsList = await knex('brands')
-//         .select('brands.id', 
-//         'brands.name',
-//         'brands.date_created', 
-//         'brands.date_updated')
-//         .select(knex.raw(`count(*) OVER() AS count`))
-//         .where(knex.raw(`LOWER(brands.${filterby}) LIKE ?`, `%${filtertext}%`))
-//         .offset((query.page-1)*query.recordsperpage)
-//         .limit(query.recordsperpage)
-//         .orderBy("brands."+query.orderby, query.ordertype);
-
-//         if(brandsList && brandsList.length > 0){
-//             const count = brandsList[0].count;
-//             const r = await knex('brands')
-//             .select('brands.id', 
-//             'brands.name', 
-//             'brands.thumbnail', 
-//             'brands_categories.id AS brand_category_id',
-//             'brands_categories.category_id',
-//             'categories.name AS category_name', 
-//             'categories.thumbnail AS category_thumbnail', 
-//             'brands.date_created', 
-//             'brands.date_updated')
-//             .leftJoin('brands_categories', 'brands_categories.brand_id', '=', 'brands.id')
-//             .leftJoin('categories', 'categories.id', '=', 'brands_categories.category_id')
-//             .whereIn('brands.id', getIds(brandsList))
-//             .orderBy("brands."+query.orderby, query.ordertype);
-
-//             if(r && r.length > 0){
-//                 return { records: buildModel(r), count };
-//             } else {
-//                 return { records: [], count: 0 };
-//             }
-//         } else {
-//             return { records: [], count: 0 };
-//         }
-//     } catch (error) {
-//         console.log(error);
-//         return { records: [], count: 0 };
-//     }
-// };
-
 exports.findAllAdvanced = async (query)=>{
     try {
         const fieldsAlias = {
@@ -197,7 +122,7 @@ exports.findAllAdvanced = async (query)=>{
         .offset(offset)
         .limit(query.pagesize);
 
-        queryHelper.applyOrderConditionsFromQuery(query, fieldsAlias, null, dbMainQuery);
+        queryHelper.applyOrderConditionsFromQuery(query, fieldsAlias, ["category"], dbMainQuery);
 
         dbMainQuery.groupBy('brands.id', 'brands.name');
         
@@ -218,7 +143,7 @@ exports.findAllAdvanced = async (query)=>{
         .leftJoin('categories', 'categories.id', '=', 'brands_categories.category_id')
         .whereIn('brands.id', mainBrandsList.map(x => x.id));
 
-        queryHelper.applyOrderConditionsFromQuery(query, fieldsAlias, null, dbSubQuery);
+        queryHelper.applyOrderConditionsFromQuery(query, fieldsAlias, [], dbSubQuery);
 
         const finalBrandsList = await dbSubQuery
         .select('brands.id', 
@@ -234,7 +159,7 @@ exports.findAllAdvanced = async (query)=>{
         if(finalBrandsList === null || finalBrandsList.length === 0){
             return { count: 0, records: [] };
         }
-        let aggregatedRecords = buildModel(finalBrandsList, "simple");
+        let aggregatedRecords = this.buildModel(finalBrandsList, "simple");
         let tempCount = 0;
         aggregatedRecords = aggregatedRecords.map(x => {
             return merge({index: offset + ++tempCount}, x);

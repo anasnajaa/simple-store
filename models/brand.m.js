@@ -2,6 +2,7 @@ const knex = require('knex')(require('../config/db-connect'));
 const awsS3 = require('../util/awsS3');
 const queryHelper = require('../util/knexQueryHelper');
 const {merge} = require('lodash');
+const {databaseError} = require('../util/errorHandler')
 
 exports.buildModel = (brands, mode)=>{
     const uBrands = []; 
@@ -64,10 +65,13 @@ exports.buildModel = (brands, mode)=>{
             if(brand.thumbExist()){
                 const filesDelete = await awsS3.deleteFiles([brand.thumbnail]);
                 if(filesDelete){
-                    brand.thumbnail = null;
                     brand.thumbnail_url = null;
+                    brand.thumbnail = null;
+                    return true;
                 }
+                return false;
             }
+            return true;
         };
 
         brand.updateThumb = async (file)=>{
@@ -166,7 +170,7 @@ exports.findAllAdvanced = async (query)=>{
         });
         return { count, records: aggregatedRecords};
     } catch (error) {
-        console.log(error);
+        databaseError(error);
         return { count: 0, records: [] };
     }
 };
@@ -194,7 +198,7 @@ exports.findOneById = async (id)=>{
             return null;
         }
     } catch (error) {
-        console.log( error);
+        databaseError(error);
         return null;
     }
 };
@@ -211,7 +215,7 @@ exports.findOneByName = async (name)=>{
             return null;
         }
     } catch (error) {
-        console.log(error);
+        databaseError(error);
         return null;
     }
 };
@@ -233,7 +237,7 @@ exports.updateOne = async (id, name, thumbnail)=>{
             return null;
         }
     } catch (error) {
-        console.log(error);
+        databaseError(error);
         return null;
     }
 };
@@ -253,7 +257,7 @@ exports.insertBrandCategory = async (brandId, categoryId)=>{
             return null;
         }
     } catch (error) {
-        console.log(error);
+        databaseError(error);
         return null;
     }
 };
@@ -274,7 +278,7 @@ exports.insertOne = async (name, thumbnail)=>{
             return null;
         }
     } catch (error) {
-        console.log(error);
+        databaseError(error);
         return null;
     }
 };
@@ -291,7 +295,7 @@ exports.deleteOne = async (id)=>{
             return 0;
         }
     } catch (error) {
-        console.log(error);
+        databaseError(error);
         return 0;
     }
 };
@@ -308,7 +312,7 @@ exports.deleteBrandCategory = async (id)=>{
             return 0;
         }
     } catch (error) {
-        console.log(error);
+        databaseError(error);
         return 0;
     }
 };

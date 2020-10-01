@@ -1,18 +1,12 @@
 const knex = require('knex')(require('../config/db-connect'));
 const awsS3 = require('../util/awsS3');
-const queryHelper = require('../util/queryHelper');
+const queryHelper = require('../util/knexQueryHelper');
 
 const isEmpty = (val)=>{
     return val === undefined || val === null || val === "";
 };
 
-const getIds = (rows)=>{
-    const a = [];
-    for(let i in rows){ a.push(rows[i].id); }
-    return a;
-};
-
-const buildModel = (brands)=>{
+const buildModel = (brands, mode)=>{
     const hasItem = (list, item)=>{
         for(let i in list){
             if(list[i].id === item.id){ return true; }
@@ -62,6 +56,17 @@ const buildModel = (brands)=>{
             return brand.thumbnail !== null && brand.thumbnail !== "";
         };
 
+        if(brand.thumbExist()){
+            brand.thumbnail_url = awsS3.fileUrl(brand.thumbnail);
+        } 
+    });
+
+    if(mode === "simple"){
+        return uBrands;
+    }
+
+    // attach advanced helper methods
+    uBrands.forEach(brand=>{
         brand.deleteThumb = async ()=> {
             if(brand.thumbExist()){
                 const filesDelete = await awsS3.deleteFiles([brand.thumbnail]);
@@ -96,10 +101,6 @@ const buildModel = (brands)=>{
         brand.save = async ()=>{
             return await this.updateOne(brand.id, brand.name, brand.thumbnail);
         };
-
-        if(brand.thumbExist()){
-            brand.thumbnail_url = awsS3.fileUrl(brand.thumbnail);
-        } 
     });
 
     return uBrands;
@@ -126,102 +127,115 @@ exports.getCountByQuery = async (query)=>{
     }
 };
 
-exports.findAllByQuery = async (query)=>{
+// exports.findAllByQuery = async (query)=>{
+//     try {
+//         const filterby = isEmpty(query.filterby)? "name" : query.filterby;
+//         const filtertext = isEmpty(query.filtertext) ? "" : query.filtertext.toLowerCase();
+//         const brandsList = await knex('brands')
+//         .select('brands.id', 
+//         'brands.name',
+//         'brands.date_created', 
+//         'brands.date_updated')
+//         .select(knex.raw(`count(*) OVER() AS count`))
+//         .where(knex.raw(`LOWER(brands.${filterby}) LIKE ?`, `%${filtertext}%`))
+//         .offset((query.page-1)*query.recordsperpage)
+//         .limit(query.recordsperpage)
+//         .orderBy("brands."+query.orderby, query.ordertype);
+
+//         if(brandsList && brandsList.length > 0){
+//             const count = brandsList[0].count;
+//             const r = await knex('brands')
+//             .select('brands.id', 
+//             'brands.name', 
+//             'brands.thumbnail', 
+//             'brands_categories.id AS brand_category_id',
+//             'brands_categories.category_id',
+//             'categories.name AS category_name', 
+//             'categories.thumbnail AS category_thumbnail', 
+//             'brands.date_created', 
+//             'brands.date_updated')
+//             .leftJoin('brands_categories', 'brands_categories.brand_id', '=', 'brands.id')
+//             .leftJoin('categories', 'categories.id', '=', 'brands_categories.category_id')
+//             .whereIn('brands.id', getIds(brandsList))
+//             .orderBy("brands."+query.orderby, query.ordertype);
+
+//             if(r && r.length > 0){
+//                 return { records: buildModel(r), count };
+//             } else {
+//                 return { records: [], count: 0 };
+//             }
+//         } else {
+//             return { records: [], count: 0 };
+//         }
+//     } catch (error) {
+//         console.log(error);
+//         return { records: [], count: 0 };
+//     }
+// };
+
+exports.findAllAdvanced = async (query)=>{
     try {
-        const filterby = isEmpty(query.filterby)? "name" : query.filterby;
-        const filtertext = isEmpty(query.filtertext) ? "" : query.filtertext.toLowerCase();
-        const brandsList = await knex('brands')
-        .select('brands.id', 
-        'brands.name',
-        'brands.date_created', 
-        'brands.date_updated')
-        .select(knex.raw(`count(*) OVER() AS count`))
-        .where(knex.raw(`LOWER(brands.${filterby}) LIKE ?`, `%${filtertext}%`))
-        .offset((query.page-1)*query.recordsperpage)
-        .limit(query.recordsperpage)
-        .orderBy("brands."+query.orderby, query.ordertype);
-
-        if(brandsList && brandsList.length > 0){
-            const count = brandsList[0].count;
-            const r = await knex('brands')
-            .select('brands.id', 
-            'brands.name', 
-            'brands.thumbnail', 
-            'brands_categories.id AS brand_category_id',
-            'brands_categories.category_id',
-            'categories.name AS category_name', 
-            'categories.thumbnail AS category_thumbnail', 
-            'brands.date_created', 
-            'brands.date_updated')
-            .leftJoin('brands_categories', 'brands_categories.brand_id', '=', 'brands.id')
-            .leftJoin('categories', 'categories.id', '=', 'brands_categories.category_id')
-            .whereIn('brands.id', getIds(brandsList))
-            .orderBy("brands."+query.orderby, query.ordertype);
-
-            if(r && r.length > 0){
-                return { records: buildModel(r), count };
-            } else {
-                return { records: [], count: 0 };
-            }
-        } else {
-            return { records: [], count: 0 };
+        const fieldsAlias = {
+            name: "brands.name",
+            categories: "categories.name",
+            dateCreated: "brands.date_created",
+            dateUpdated: "brands.date_updated"
         }
-    } catch (error) {
-        console.log(error);
-        return { records: [], count: 0 };
-    }
-};
 
-exports.findAll = async (query)=>{
-    try {
-        const brandsList = await knex('brands')
+        const dbMainQuery = knex('brands');
+
+        dbMainQuery
+        .leftJoin('brands_categories', 'brands_categories.brand_id', '=', 'brands.id')
+        .leftJoin('categories', 'categories.id', '=', 'brands_categories.category_id');
+
+        queryHelper.applyWhereConditionsFromQuery(query, fieldsAlias, null, dbMainQuery);
+        
+        dbMainQuery
+        .offset((query.pagenum)*query.pagesize)
+        .limit(query.pagesize);
+
+        queryHelper.applyOrderConditionsFromQuery(query, fieldsAlias, null, dbMainQuery);
+
+        dbMainQuery.groupBy('brands.id', 'brands.name');
+
+        const mainBrandsList = await dbMainQuery
         .select('brands.id', 'brands.name')
-        .select(knex.raw(`count(*) OVER() AS count`))
+        .select(knex.raw(`count(*) OVER() AS count`));
+
+        if(mainBrandsList === null || mainBrandsList.length === 0){
+            return { count: 0, records: [] };
+        }
+
+        // second query
+        const count = parseInt(mainBrandsList[0].count);
+        const dbSubQuery = knex('brands');
+
+        dbSubQuery
         .leftJoin('brands_categories', 'brands_categories.brand_id', '=', 'brands.id')
         .leftJoin('categories', 'categories.id', '=', 'brands_categories.category_id')
-        .where((builder) => {
-            const ignoreFields = [];
-            const transformFields = {
-                name: "brands.name",
-                categories: "categories.name",
-                date_created: "brands.date_created",
-                date_updated: "brands.date_updated"
-            }
-            queryHelper.parseWhereQueries(query, transformFields, ignoreFields, builder);
-        })
-        .offset((query.pagenum)*query.pagesize)
-        .limit(query.pagesize)
-        .orderBy(`brands.${query.sortdatafield}`, query.sortorder)
-        .groupBy('brands.id', 'brands.name');
+        .whereIn('brands.id', mainBrandsList.map(x => x.id));
 
-        if(brandsList && brandsList.length > 0){
-            const count = brandsList[0].count;
-            const r = await knex('brands')
-            .select('brands.id', 
-            'brands.name', 
-            'brands.thumbnail', 
-            'brands_categories.id AS brand_category_id',
-            'brands_categories.category_id',
-            'categories.name AS category_name', 
-            'categories.thumbnail AS category_thumbnail', 
-            'brands.date_created', 
-            'brands.date_updated')
-            .leftJoin('brands_categories', 'brands_categories.brand_id', '=', 'brands.id')
-            .leftJoin('categories', 'categories.id', '=', 'brands_categories.category_id')
-            .whereIn('brands.id', getIds(brandsList))
-            .orderBy(`brands.${query.sortdatafield}`, query.sortorder);
+        queryHelper.applyOrderConditionsFromQuery(query, fieldsAlias, null, dbSubQuery);
 
-            if(r && r.length > 0){
-                return { records: buildModel(r), count }
-            } else {
-                return { records: [], count: 0 };
-            }
-        } else {
-            return { records: [], count: 0 };
+        const finalBrandsList = await dbSubQuery
+        .select('brands.id', 
+        'brands.name', 
+        'brands.thumbnail', 
+        'brands_categories.id AS brand_category_id',
+        'brands_categories.category_id',
+        'categories.name AS category_name', 
+        'categories.thumbnail AS category_thumbnail', 
+        'brands.date_created', 
+        'brands.date_updated');
+
+        if(finalBrandsList === null || finalBrandsList.length === 0){
+            return { count: 0, records: [] };
         }
+
+        return { count, records: buildModel(finalBrandsList, "simple") };
     } catch (error) {
         console.log(error);
-        return { records: [], count: 0 };
+        return { count: 0, records: [] };
     }
 };
 

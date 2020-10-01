@@ -1,12 +1,8 @@
-const { render, flash, renderError, parseFilterQuery } = require('../util/express');
-const { logError } = require('../util/errorHandler');
+const { parseFilterQuery } = require('../util/knexQueryHelper');
+const { apiError } = require('../util/errorHandler');
 const brandModel = require('../models/brand.m');
 const v = require('../validators');
-const { isEmpty } = require('lodash');
-
-const viewOne = 'admin/brands/details';
-const urlShowBrandDetails = (id)=> `/admin/brands/${id}`;
-const urlShowItemsList = ()=> `/admin/brands/`;
+const { isEmpty, merge } = require('lodash');
 
 
 exports.get_brand = async (req, res, next)=>{
@@ -20,49 +16,37 @@ exports.get_brand = async (req, res, next)=>{
         }
         
     } catch (error) {
-        res.status(500).json(error);
+        apiError(res, error);
     }
-}
-
-exports.update_brand = async (req, res, next)=>{ 
-
 }
 
 exports.delete_brand = async (req, res, next) => {
     try {
         const id = req.params.id;
-        const recordsDeleted = await brandModel.deleteOne(id);
-        if(recordsDeleted === 1){
-            flash(req, "success", null, "Record deleted"); 
-            res.redirect(urlShowItemsList());
-        } else {
-            flash(req, "danger", null, "Failed to delete record"); 
-            res.redirect(urlShowItemsList());
-        }
-    } catch (error) {
-        renderError(req, res, next, error);
-    }
-};
-
-exports.api_delete_brand = async (req, res, next) => {
-    try {
-        const id = req.params.id;
         const deleted = await brandModel.deleteOne(id);
         res.json({ deleted });
     } catch (error) {
-        logError(error);
-        res.json({error});
+        apiError(res, error);
     }
 };
 
-exports.brand_grid_data = async (req, res, next)=>{
+exports.brands_list_advanced = async (req, res, next)=>{
     try {
         const query = parseFilterQuery(req.body);
-        const response = await brandModel.findAll(query);
+        const list = await brandModel.findAllAdvanced(query);
+        res.json(merge({status: 1}, list));
+    } catch (error) {
+        apiError(res, error);
+    }
+};
+
+exports.brands_list_simple = async (req, res, next) => {
+    try {
+        const query = parseFilterQuery(req.body);
+        const response = await brandModel.findAllAdvanced(query);
         res.json(response);
     } catch (error) {
-        console.log(error);
-        res.json(error);
+        apiError(res, error);
     }
 };
 
@@ -75,34 +59,25 @@ exports.add_brand = async (req, res, next)=>{
         v.vBrandExist(errors, name, "name");
     
         if(!isEmpty(errors)){
-            render(req, res, next, viewOne, {brand: req.body, mode: "add", errors});
             return;
         }
 
         const brand = await brandModel.insertOne(name, thumbnail_url);
 
         if(brand){
-            flash(req, "success", null, "Record added");
-            req.redirect(urlShowItemsList());
         } else {
-            flash(req, "danger", null, "Failed to insert record");
-            render(req, res, next, viewOne, {brand: req.body, mode: "add", errors: {}});
         }
     } catch (error) {
-        renderError(req, res, next, error);
+        apiError(res, error);
     }
 };
 
-exports.edit_brand = async (req, res, next)=> {
+exports.update_brand = async (req, res, next)=> {
     try {
         const errors = {};
         const id = req.params.id;
         const { name, delete_thumb } = req.body;
         let thumbnail = null;
-
-        const rerenderEditPage = ()=>{
-            this.show_edit_brand(req, res, next, errors, req.body);
-        };
 
         v.vEmpty(errors, name, "name");
         await v.vBrandExist("name", errors, name);
@@ -113,7 +88,6 @@ exports.edit_brand = async (req, res, next)=> {
         }
 
         if(!isEmpty(errors)){
-            rerenderEditPage();
             return;
         }
 
@@ -123,7 +97,6 @@ exports.edit_brand = async (req, res, next)=> {
             const thumbUpdated = await brand.updateThumb(thumbnail);
             if(!thumbUpdated){
                 errors["thumbnail_url"] = "Uploaded failed, please try again";
-                rerenderEditPage();
                 return;
             }
         } else if (delete_thumb){
@@ -133,15 +106,11 @@ exports.edit_brand = async (req, res, next)=> {
         brand.updateName(name);
 
         if(brand.save()){
-            flash(req, "success", null, "Record updated");
-            res.redirect(urlShowBrandDetails(id));
         } else {
-            flash(req, "danger", null, "Failed to update record");
-            rerenderEditPage();
             return;
         }
     } catch (error) {
-        renderError(req, res, next, error);
+        apiError(res, error);
     }
 };
 
@@ -179,6 +148,6 @@ exports.upload_thumbnail = async (req, res, next)=> {
             res.status(500).json(errors);
         }
     } catch (error) {
-        res.status(500).json(error);
+        apiError(res, error);
     }  
 }

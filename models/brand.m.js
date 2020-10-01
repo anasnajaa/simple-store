@@ -1,6 +1,7 @@
 const knex = require('knex')(require('../config/db-connect'));
 const awsS3 = require('../util/awsS3');
 const queryHelper = require('../util/knexQueryHelper');
+const {merge} = require('lodash');
 
 const isEmpty = (val)=>{
     return val === undefined || val === null || val === "";
@@ -177,10 +178,12 @@ exports.findAllAdvanced = async (query)=>{
     try {
         const fieldsAlias = {
             name: "brands.name",
-            categories: "categories.name",
+            category: "categories.name",
             dateCreated: "brands.date_created",
             dateUpdated: "brands.date_updated"
         }
+
+        const offset = query.pagenum*query.pagesize;
 
         const dbMainQuery = knex('brands');
 
@@ -191,13 +194,13 @@ exports.findAllAdvanced = async (query)=>{
         queryHelper.applyWhereConditionsFromQuery(query, fieldsAlias, null, dbMainQuery);
         
         dbMainQuery
-        .offset((query.pagenum)*query.pagesize)
+        .offset(offset)
         .limit(query.pagesize);
 
         queryHelper.applyOrderConditionsFromQuery(query, fieldsAlias, null, dbMainQuery);
 
         dbMainQuery.groupBy('brands.id', 'brands.name');
-
+        
         const mainBrandsList = await dbMainQuery
         .select('brands.id', 'brands.name')
         .select(knex.raw(`count(*) OVER() AS count`));
@@ -231,8 +234,12 @@ exports.findAllAdvanced = async (query)=>{
         if(finalBrandsList === null || finalBrandsList.length === 0){
             return { count: 0, records: [] };
         }
-
-        return { count, records: buildModel(finalBrandsList, "simple") };
+        let aggregatedRecords = buildModel(finalBrandsList, "simple");
+        let tempCount = 0;
+        aggregatedRecords = aggregatedRecords.map(x => {
+            return merge({index: offset + ++tempCount}, x);
+        });
+        return { count, records: aggregatedRecords};
     } catch (error) {
         console.log(error);
         return { count: 0, records: [] };

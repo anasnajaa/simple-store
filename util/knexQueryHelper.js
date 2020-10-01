@@ -1,3 +1,5 @@
+const {toLower} = require('lodash');
+
 exports.parseFilterQuery = (query)=>{
     let { pagenum, 
         pagesize, 
@@ -21,9 +23,9 @@ const parseFilterField = (filterField, knexBuilder)=>{
         if(type === "string"){
             if (condition === "contains"){
                 if(operator === "or"){
-                    knexBuilder.orWhereRaw(`LOWER(${field}) LIKE ?`, `%${value}%`);
+                    knexBuilder.orWhereRaw(`LOWER(${field}) LIKE ?`, `%${toLower(value)}%`);
                 } else if(operator === "and"){
-                    knexBuilder.andWhereRaw(`LOWER(${field}) LIKE ?`, `%${value}%`);
+                    knexBuilder.andWhereRaw(`LOWER(${field}) LIKE ?`, `%${toLower(value)}%`);
                 }
             }
         } 

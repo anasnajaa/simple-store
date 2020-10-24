@@ -6,5 +6,6 @@ require('./categories.r').init(router);
 require('./account.r').init(router);
 require('./aws.r').init(router);
 require('./sms.r').init(router);
+require('./other.r').init(router);
 
 module.exports = router;

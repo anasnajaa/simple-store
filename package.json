@@ -31,7 +31,9 @@
     "rate-limiter-flexible": "^2.1.10",
     "twilio": "^3.49.3",
     "uuid": "^8.3.0",
-    "validator": "^13.1.1"
+    "validator": "^13.1.1",
+    "isomorphic-fetch": "^3.0.0",
+    "es6-promise": "^4.2.8"
   },
   "devDependencies": {
     "eslint": "^6.7.2",

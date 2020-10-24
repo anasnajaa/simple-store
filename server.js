@@ -42,7 +42,7 @@ connection.once('open', () => {
   rateLimiter.init(connection);
   app.use(rateLimiter.rateLimiterMiddleware);
 
-  app.use('/api', router);
+  app.use('/api/v1', router);
 
   app.listen(stage.port, () => console.log("Server Started"));
 });

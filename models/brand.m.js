@@ -273,7 +273,7 @@ exports.insertOne = async (name, thumbnail)=>{
         .returning('*');
 
         if(rows && rows.length > 0){
-            return this.findOneById(id);
+            return rows;
         } else {
             return null;
         }

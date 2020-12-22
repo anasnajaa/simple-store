@@ -32,7 +32,7 @@ exports.delete_brand = async (req, res, next) => {
 
 exports.brands_list_advanced = async (req, res, next)=>{
     try {
-        const query = parseFilterQuery(req.body);
+        const query = parseFilterQuery(req.query);
         const list = await brandModel.findAllAdvanced(query);
         res.json(merge({status: 1}, list));
     } catch (error) {
@@ -59,15 +59,45 @@ exports.add_brand = async (req, res, next)=>{
         v.vBrandExist(errors, name, "name");
     
         if(!isEmpty(errors)){
+            res.status(402).json({
+                messages: [
+                    {
+                        message: "please fill all required fields"
+                    }
+                ]
+            })
             return;
         }
 
-        const brand = await brandModel.insertOne(name, thumbnail_url);
-
-        if(brand){
-        } else {
+        try {
+            const brand = await brandModel.insertOne(name, thumbnail_url);
+            res.status(200).json({
+                data: {
+                    brand
+                },
+                messages: [
+                    {
+                        message: "record added"
+                    }
+                ]
+            });
+        } catch (error) {
+            res.status(400).json({
+                messages: [
+                    {
+                        message: "something went wrong"
+                    }
+                ]
+            });
         }
     } catch (error) {
+        res.status(500).json({
+            messages: [
+                {
+                    message: "server error"
+                }
+            ]
+        });
         apiError(res, error);
     }
 };
@@ -96,7 +126,7 @@ exports.update_brand = async (req, res, next)=> {
         if (thumbnail) {
             const thumbUpdated = await brand.updateThumb(thumbnail);
             if(!thumbUpdated){
-                errors["thumbnail_url"] = "Uploaded failed, please try again";
+                errors["thumbnail_url"] = "Upload failed, please try again";
                 return;
             }
         } else if (delete_thumb){
